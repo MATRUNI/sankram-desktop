@@ -1,0 +1,16 @@
+# Build outputs
+build/
+bin/
+*.o
+*.out
+*.txt
+
+logs
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*~
+
