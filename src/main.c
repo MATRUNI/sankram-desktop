@@ -2,7 +2,7 @@
 
 int main(int argc, char *argv[]) {
     window_config_t win_cfg = {
-        .title = "Sankram Desktop",
+        .title = "My app Desktop",
         .width = 1200,
         .height = 800,
         .min_width = 600,
@@ -16,7 +16,13 @@ int main(int argc, char *argv[]) {
         .developer_extras = true,
         .disable_web_security = true,
         .javascript_enabled = true,
-        .auto_load_images = true
+        .auto_load_images = true,
+        .startup_script =
+        "window.myapp = {"
+        "  invoke: function(cmd, args = {}) {"
+        "    return window.webkit.messageHandlers.desktop.postMessage({ cmd, args });"
+        "  }"
+        "};"
     };
 
     app_config_t config = {

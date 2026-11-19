@@ -4,6 +4,8 @@
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 
+#include "ipc.h"
+
 static void activate_callback(GtkApplication *app,gpointer user_data)
 {
     app_config_t *con =(app_config_t *) user_data;
@@ -53,6 +55,7 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     webkit_settings_set_javascript_can_open_windows_automatically(settings, con->webview->javascript_can_open_windows);
     
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(webview));
+    ipc_init(manager);
     if (con->webview->startup_script) {
         WebKitUserScript *script = webkit_user_script_new(
             con->webview->startup_script,

@@ -9,7 +9,7 @@ PKG_LIBS := $(shell pkg-config --libs $(PKGS))
 SRC_DIR := src
 INCLUDE_DIR := include
 BUILD_DIR := build
-TARGET := $(BUILD_DIR)/sankram-desktop
+TARGET := $(BUILD_DIR)/app
 
 # Find all .c source files in src/
 SRCS := $(wildcard $(SRC_DIR)/*.c)
