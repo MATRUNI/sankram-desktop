@@ -1,6 +1,14 @@
 #include "app.h"
 
-int main(int argc, char *argv[]) {
+void handle_system_info(const char *args, ipc_reply_t *reply) 
+{
+    (void)args;
+    ipc_reply_send(reply, "{\"os\": \"Linux\", \"arch\": \"x86_64\"}");
+}
+
+int main(int argc, char *argv[]) 
+{
+    app_bind_command("get_sysinfo", handle_system_info);
     window_config_t win_cfg = {
         .title = "My app Desktop",
         .width = 1200,
