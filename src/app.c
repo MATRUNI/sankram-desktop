@@ -4,10 +4,50 @@
 #if defined(__linux__)
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
+#include <sys/stat.h>
+#include "memi.h"
 
 #include "ipc.h"
 
 static GtkWidget *g_active_webview = NULL;
+
+static void on_uri_scheme_request(WebKitURISchemeRequest *request, gpointer user_data) 
+{
+    const char *root_dir = (const char *)user_data; // "./dist"
+    const char *path = webkit_uri_scheme_request_get_path(request); // e.g. "/assets/main.js"
+    if (!path || strcmp(path, "/") == 0 || *path == '\0') {
+        path = "/index.html";
+    }
+    char full_path[256];
+    snprintf(full_path, sizeof(full_path), "%s%s", root_dir, path);
+
+    GFile *file = g_file_new_for_path(full_path);
+    GFileInputStream *stream = g_file_read(file, NULL, NULL);
+
+    if (!stream) 
+    {
+        snprintf(full_path,sizeof(full_path),"%s/index.html",root_dir);
+        file = g_file_new_for_path(full_path);
+        stream = g_file_read(file,NULL,NULL);
+        if (!stream) 
+        {
+            GError *err = g_error_new(G_IO_ERROR, G_IO_ERROR_NOT_FOUND, "Not Found");
+            webkit_uri_scheme_request_finish_error(request, err);
+            g_error_free(err);
+            g_object_unref(file);
+            return;
+        }
+    }
+
+    struct stat st;
+    stat(full_path, &st);
+    const char *mime = get_memi_type(full_path);
+
+    webkit_uri_scheme_request_finish(request, G_INPUT_STREAM(stream), st.st_size, mime);
+
+    g_object_unref(stream);
+    g_object_unref(file);
+}
 
 static void activate_callback(GtkApplication *app,gpointer user_data)
 {
@@ -25,7 +65,7 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     gtk_widget_set_vexpand(webview, TRUE);
 
     WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
-    webkit_settings_set_enable_developer_extras(settings, con->webview->developer_extras);
+    // webkit_settings_set_enable_developer_extras(settings, con->webview->developer_extras);
     webkit_settings_set_disable_web_security(settings,con->webview->disable_web_security);
     if(con->webview->developer_extras)
     {
@@ -92,6 +132,9 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
         webkit_user_content_manager_add_style_sheet(manager, style);
         webkit_user_style_sheet_unref(style);
     }
+    WebKitWebContext *context = webkit_web_view_get_context(WEBKIT_WEB_VIEW(webview));
+
+    webkit_web_context_register_uri_scheme(context,"app",on_uri_scheme_request,"./dist",NULL);
 
     webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview),con->webview->url);
     gtk_window_present(GTK_WINDOW(window));

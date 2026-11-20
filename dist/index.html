@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sankram Desktop</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">STANDALONE ASSET ENGINE</div>
+      <h1>Sankram Desktop</h1>
+      <p class="subtitle">Loaded directly via native <code>app://</code> scheme &bull; Zero HTTP servers</p>
+    </header>
+
+    <div class="grid">
+      <!-- Card 1: IPC Invoke -->
+      <div class="card">
+        <h3>1. Bidirectional IPC (JS &rarr; C)</h3>
+        <p>Invoke native C functions via FNV-1a hash table dispatch:</p>
+        <button id="btn-sysinfo">Get System Info</button>
+        <pre id="sysinfo-out">// Click button to fetch from C</pre>
+      </div>
+
+      <!-- Card 2: Push Events -->
+      <div class="card">
+        <h3>2. C Push Events (C &rarr; JS)</h3>
+        <p>Listen for real-time background push events from C:</p>
+        <button id="btn-alert" class="accent">Trigger C Alert</button>
+        <div id="alert-feed">Waiting for events...</div>
+      </div>
+    </div>
+
+    <footer>
+      <a href="/about.html" class="nav-link">Go to About Page &rarr;</a>
+    </footer>
+  </div>
+
+  <script src="/script.js"></script>
+</body>
+</html>
+

@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
     };
 
     webview_config_t web_cfg = {
-        .url = "http://localhost:5173",
+        .url = "app://localhost/index.html",
         .developer_extras = true,
         .disable_web_security = true,
         .javascript_enabled = true,

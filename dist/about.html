@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About - Sankram Desktop</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">MULTI-PAGE ASSET STREAMING</div>
+      <h1>About This Framework</h1>
+      <p class="subtitle">Multi-page navigation served via <code>GFileInputStream</code></p>
+    </header>
+
+    <div class="card">
+      <h3>Architecture Overview</h3>
+      <ul class="feature-list">
+        <li><strong>Window Engine:</strong> GTK 4 + WebKitGTK 6.0</li>
+        <li><strong>IPC Dispatcher:</strong> $O(1)$ FNV-1a Hash Table (Zero malloc)</li>
+        <li><strong>Asset Protocol:</strong> Custom <code>app://</code> Scheme with FNV MIME Dispatcher</li>
+        <li><strong>Event System:</strong> Map & Set Event Registry with React-ready <code>unlisten()</code></li>
+      </ul>
+    </div>
+
+    <footer>
+      <a href="/index.html" class="nav-link">&larr; Back to Home</a>
+    </footer>
+  </div>
+</body>
+</html>
+
