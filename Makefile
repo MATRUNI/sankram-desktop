@@ -2,18 +2,34 @@ CC ?= gcc
 CFLAGS ?= -Wall -Wextra -O2 -std=c11
 DEBUG_CFLAGS ?= -Wall -Wextra -g -O0 -std=c11 -DDEBUG
 
-PKGS := webkitgtk-6.0 gtk4
-PKG_CFLAGS := $(shell pkg-config --cflags $(PKGS))
-PKG_LIBS := $(shell pkg-config --libs $(PKGS))
-
 SRC_DIR := src
 INCLUDE_DIR := include
 BUILD_DIR := build
 TARGET := $(BUILD_DIR)/app
 
-# Find all .c source files in src/
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-# Convert src/foo.c -> build/foo.o
+# OS Detection
+UNAME_S := $(shell uname -s)
+
+ifeq ($(UNAME_S), Linux)
+    PKGS := webkitgtk-6.0 gtk4
+    PKG_CFLAGS := $(shell pkg-config --cflags $(PKGS))
+    PKG_LIBS := $(shell pkg-config --libs $(PKGS))
+    PLATFORM_SRCS := $(SRC_DIR)/platforms/platform_linux.c
+else ifeq ($(UNAME_S), Darwin)
+    PLATFORM_SRCS := $(SRC_DIR)/platforms/platform_macos.m
+    PKG_CFLAGS :=
+    PKG_LIBS := -framework Cocoa -framework WebKit
+else
+    PLATFORM_SRCS := $(SRC_DIR)/platforms/platform_windows.c
+    PKG_CFLAGS :=
+    PKG_LIBS := -luser32 -lgdi32 -lole32 -lshlwapi
+endif
+
+# Common source files in src/ (app.c, ipc.c, memi.c, main.c)
+COMMON_SRCS := $(wildcard $(SRC_DIR)/*.c)
+SRCS := $(COMMON_SRCS) $(PLATFORM_SRCS)
+
+# Convert src/foo.c -> build/foo.o and src/platforms/foo.c -> build/platforms/foo.o
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
 
 # ANSI colors for clean output
@@ -39,6 +55,7 @@ $(TARGET): $(OBJS) | $(BUILD_DIR)
 	@$(CC) $(OBJS) $(PKG_LIBS) -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/bridge.h | $(BUILD_DIR)
+	@mkdir -p $(dir $@)
 	@printf "  $(CYAN)[CC]$(RESET)    $<\n"
 	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(BUILD_DIR) $(PKG_CFLAGS) -c $< -o $@
 
