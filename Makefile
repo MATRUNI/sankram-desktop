@@ -26,13 +26,21 @@ RESET  := \033[0m
 
 all: $(TARGET)
 
+# 1. Compile the self-hosted embed tool
+$(BUILD_DIR)/embed: tools/embed.c | $(BUILD_DIR)
+	@$(CC) $(CFLAGS) $< -o $@
+
+# 2. Generate bridge.h whenever assets/bridge.js changes
+$(BUILD_DIR)/bridge.h: assets/bridge.js $(BUILD_DIR)/embed | $(BUILD_DIR)
+	@./$(BUILD_DIR)/embed assets/bridge.js $@ bridge_js
+
 $(TARGET): $(OBJS) | $(BUILD_DIR)
 	@printf "  $(GREEN)[LD]$(RESET)    $@\n"
 	@$(CC) $(OBJS) $(PKG_LIBS) -o $@
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c | $(BUILD_DIR)
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/bridge.h | $(BUILD_DIR)
 	@printf "  $(CYAN)[CC]$(RESET)    $<\n"
-	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) $(PKG_CFLAGS) -c $< -o $@
+	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(BUILD_DIR) $(PKG_CFLAGS) -c $< -o $@
 
 $(BUILD_DIR):
 	@mkdir -p $(BUILD_DIR)

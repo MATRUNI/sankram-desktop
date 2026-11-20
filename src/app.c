@@ -1,10 +1,13 @@
 #include "app.h"
+#include "bridge.h"
 
 #if defined(__linux__)
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 
 #include "ipc.h"
+
+static GtkWidget *g_active_webview = NULL;
 
 static void activate_callback(GtkApplication *app,gpointer user_data)
 {
@@ -15,6 +18,8 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     gtk_window_set_default_size(GTK_WINDOW(window),con->window->width,con->window->height);
     
     GtkWidget *webview = webkit_web_view_new();
+
+    g_active_webview = webview;
 
     gtk_widget_set_hexpand(webview, TRUE);
     gtk_widget_set_vexpand(webview, TRUE);
@@ -56,6 +61,16 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(webview));
     ipc_init(manager);
+    
+    WebKitUserScript *bridge_script = webkit_user_script_new(
+        bridge_js,
+        WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
+        WEBKIT_USER_SCRIPT_INJECT_AT_DOCUMENT_START,
+        NULL, NULL
+    );
+    webkit_user_content_manager_add_script(manager, bridge_script);
+    webkit_user_script_unref(bridge_script);
+
     if (con->webview->startup_script) {
         WebKitUserScript *script = webkit_user_script_new(
             con->webview->startup_script,
@@ -83,14 +98,25 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     return;
 }
 
-int app_run(const app_config_t *config, int argc, char *argv[]) {
-    // const char *title = config->window->title ? config->window->title : "DesktopApp";
+int app_run(const app_config_t *config, int argc, char *argv[]) 
+{
     GtkApplication *app = gtk_application_new(NULL,G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app,"activate",G_CALLBACK(activate_callback),(gpointer)config);
 
     g_application_run(G_APPLICATION(app),argc,argv);
     g_object_unref(app);
     return 0;
+}
+
+void app_emit(const char *event, const char *json_data) 
+{
+    if (!g_active_webview || !event) return;
+
+    const char *payload = (json_data && *json_data) ? json_data : "null";
+
+    char *script = g_strdup_printf("window.myapp._emit(\"%s\", %s);", event, payload);
+    webkit_web_view_evaluate_javascript( WEBKIT_WEB_VIEW(g_active_webview),script,-1,NULL, NULL, NULL, NULL, NULL);
+    g_free(script);
 }
 
 #elif defined(_WIN32)

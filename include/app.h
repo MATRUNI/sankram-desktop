@@ -50,4 +50,6 @@ typedef struct {
 
 int app_run(const app_config_t *config, int argc, char *argv[]);
 
+void app_emit(const char *event, const char *json_data);
+
 #endif

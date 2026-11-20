@@ -6,6 +6,13 @@ void handle_system_info(const char *args, ipc_reply_t *reply)
     ipc_reply_send(reply, "{\"os\": \"Linux\", \"arch\": \"x86_64\"}");
 }
 
+void handle_test_emit(const char *args, ipc_reply_t *reply) 
+{
+    (void)args;
+    app_emit("server_alert", "{\"msg\": \"Hello from C event!\", \"value\": 42}");
+    ipc_reply_send(reply, "{\"status\": \"emitted\"}");
+}
+
 int main(int argc, char *argv[]) 
 {
     app_bind_command("get_sysinfo", handle_system_info);
@@ -25,18 +32,12 @@ int main(int argc, char *argv[])
         .disable_web_security = true,
         .javascript_enabled = true,
         .auto_load_images = true,
-        .startup_script =
-        "window.myapp = {"
-        "  invoke: function(cmd, args = {}) {"
-        "    return window.webkit.messageHandlers.desktop.postMessage({ cmd, args });"
-        "  }"
-        "};"
     };
 
     app_config_t config = {
         .window = &win_cfg,
         .webview = &web_cfg
     };
-
+    app_bind_command("trigger_alert", handle_test_emit);
     return app_run(&config, argc, argv);
 }
