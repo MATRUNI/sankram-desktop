@@ -2,8 +2,6 @@
 #include "bridge.h"
 #include "platform.h"
 
-#include <gtk/gtk.h>
-#include <webkit/webkit.h>
 #include <sys/stat.h>
 #include "memi.h"
 

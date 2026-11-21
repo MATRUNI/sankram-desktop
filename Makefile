@@ -11,26 +11,28 @@ TARGET := $(BUILD_DIR)/app
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S), Linux)
+    PLATFORM := linux
     PKGS := webkitgtk-6.0 gtk4
     PKG_CFLAGS := $(shell pkg-config --cflags $(PKGS))
     PKG_LIBS := $(shell pkg-config --libs $(PKGS))
-    PLATFORM_SRCS := $(SRC_DIR)/platforms/platform_linux.c
 else ifeq ($(UNAME_S), Darwin)
-    PLATFORM_SRCS := $(SRC_DIR)/platforms/platform_macos.m
+    PLATFORM := macos
     PKG_CFLAGS :=
     PKG_LIBS := -framework Cocoa -framework WebKit
 else
-    PLATFORM_SRCS := $(SRC_DIR)/platforms/platform_windows.c
+    PLATFORM := windows
     PKG_CFLAGS :=
     PKG_LIBS := -luser32 -lgdi32 -lole32 -lshlwapi
 endif
 
 # Common source files in src/ (app.c, ipc.c, memi.c, main.c)
 COMMON_SRCS := $(wildcard $(SRC_DIR)/*.c)
+PLATFORM_SRCS := $(wildcard $(SRC_DIR)/platform/$(PLATFORM)/*.c) $(wildcard $(SRC_DIR)/platform/$(PLATFORM)/*.m)
 SRCS := $(COMMON_SRCS) $(PLATFORM_SRCS)
 
-# Convert src/foo.c -> build/foo.o and src/platforms/foo.c -> build/platforms/foo.o
-OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
+# Convert src/foo.c -> build/foo.o and src/platform/... -> build/platform/...
+OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(filter %.c, $(SRCS))) \
+        $(patsubst $(SRC_DIR)/%.m, $(BUILD_DIR)/%.o, $(filter %.m, $(SRCS)))
 
 # ANSI colors for clean output
 CYAN   := \033[36m
