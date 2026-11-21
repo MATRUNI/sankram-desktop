@@ -13,4 +13,4 @@ logs
 .DS_Store
 *.swp
 *~
-
+lib

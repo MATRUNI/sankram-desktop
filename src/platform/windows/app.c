@@ -1,17 +1,90 @@
 #include <windows.h>
-#include <WebView2.h>
+#include "WebView2_lite.h"
 #include "app.h"
+static ICoreWebView2Controller *g_controller = NULL;
+static ICoreWebView2 *g_webview    = NULL;
+static HWND g_hwnd = NULL;
 
+static HRESULT STDMETHODCALLTYPE dummy_QueryInterface(void *This, REFIID riid, void **ppv) {
+    (void)This; (void)riid;
+    *ppv = NULL;
+    return E_NOINTERFACE;
+}
+static ULONG STDMETHODCALLTYPE dummy_AddRef(void *This) { 
+    (void)This; return 1; 
+}
+static ULONG STDMETHODCALLTYPE dummy_Release(void *This) { 
+    (void)This; return 1; 
+}
+
+static HRESULT STDMETHODCALLTYPE OnControllerCreated(ICoreWebView2CreateCoreWebView2ControllerCompletedHandler *This,HRESULT result,ICoreWebView2Controller *controller)
+{
+    (void)This;
+    if (FAILED(result) || !controller) return S_OK;
+
+    g_controller = controller;
+    controller->lpVtbl->AddRef(controller);
+
+    controller->lpVtbl->get_CoreWebView2(controller, &g_webview);
+    g_webview->lpVtbl->AddRef(g_webview);
+
+    RECT bounds;
+    GetClientRect(g_hwnd, &bounds);
+    controller->lpVtbl->put_Bounds(controller, bounds);
+    controller->lpVtbl->put_IsVisible(controller, TRUE);
+
+    g_webview->lpVtbl->Navigate(g_webview, L"https://www.google.com");
+
+    return S_OK;
+}
+
+static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl ControllerHandlerVtbl = {
+    .QueryInterface = (void*)dummy_QueryInterface,
+    .AddRef = (void *) dummy_AddRef,
+    .Release = (void *) dummy_Release,
+    .Invoke = OnControllerCreated
+};
+static ICoreWebView2CreateCoreWebView2ControllerCompletedHandler ControllerHandler = {
+    .lpVtbl = &ControllerHandlerVtbl
+};
+
+static HRESULT STDMETHODCALLTYPE OnEnvironmentCreated(ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler *This,HRESULT result,ICoreWebView2Environment *env)
+{
+    (void)This;
+    if (FAILED(result) || !env) return S_OK;
+
+    env->lpVtbl->CreateCoreWebView2Controller(env, g_hwnd, &ControllerHandler);
+    return S_OK;
+}
+
+static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl EnvHandlerVtbl = {
+    .QueryInterface = (void*)dummy_QueryInterface,
+    .AddRef         = (void*)dummy_AddRef,
+    .Release        = (void*)dummy_Release,
+    .Invoke         = OnEnvironmentCreated
+};
+static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler EnvHandler = {
+    .lpVtbl = &EnvHandlerVtbl
+};
 
 static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
     switch (uMsg) 
     {
         case WM_DESTROY:
+            if(g_controller!=NULL)
+            {
+                g_controller->lpVtbl->Close(g_controller);
+            }
             PostQuitMessage(0);
             return 0;
-
         case WM_SIZE:
+            if(g_controller!=NULL)
+            {
+                RECT bounds;
+                GetClientRect(hwnd,&bounds);
+                g_controller->lpVtbl->put_Bounds(g_controller,bounds);
+            }
             return 0;
 
         case WM_GETMINMAXINFO: 
@@ -23,9 +96,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
 
+
 int platform_app_run(const app_config_t *config, int argc, char *argv[]) 
 {
     HINSTANCE hInstance = GetModuleHandle(NULL);
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     WNDCLASSEXW wc = {0};
 
     wc.hInstance = hInstance;
@@ -62,7 +137,16 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
         hInstance,
         NULL
     );
-
+    g_hwnd = hwnd;
+    HMODULE hLoader = LoadLibraryW(L"WebView2Loader.dll");
+    if (hLoader) 
+    {
+        CreateCoreWebView2EnvironmentWithOptionsFn create_env = (CreateCoreWebView2EnvironmentWithOptionsFn)GetProcAddress(hLoader, "CreateCoreWebView2EnvironmentWithOptions");
+        if (create_env) 
+        {
+            create_env(NULL, NULL, NULL, &EnvHandler);
+        }
+    }
     if (config->window->maximized)
         ShowWindow(hwnd, SW_MAXIMIZE);
     else

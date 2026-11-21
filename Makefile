@@ -1,29 +1,37 @@
-CC ?= gcc
+CC := gcc
 CFLAGS ?= -Wall -Wextra -O2 -std=c11
 DEBUG_CFLAGS ?= -Wall -Wextra -g -O0 -std=c11 -DDEBUG
 
 SRC_DIR := src
 INCLUDE_DIR := include
 BUILD_DIR := build
-TARGET := $(BUILD_DIR)/app
 
 # OS Detection
 UNAME_S := $(shell uname -s)
 
 ifeq ($(UNAME_S), Linux)
     PLATFORM := linux
+    EXE :=
     PKGS := webkitgtk-6.0 gtk4
     PKG_CFLAGS := $(shell pkg-config --cflags $(PKGS))
     PKG_LIBS := $(shell pkg-config --libs $(PKGS))
+    COPY_DEPS :=
 else ifeq ($(UNAME_S), Darwin)
     PLATFORM := macos
+    EXE :=
     PKG_CFLAGS :=
     PKG_LIBS := -framework Cocoa -framework WebKit
+    COPY_DEPS :=
 else
     PLATFORM := windows
+    EXE := .exe
     PKG_CFLAGS :=
     PKG_LIBS := -luser32 -lgdi32 -lole32 -lshlwapi
+    COPY_DEPS := @test -f lib/WebView2Loader.dll && cp -f lib/WebView2Loader.dll $(BUILD_DIR)/ || true
 endif
+
+TARGET := $(BUILD_DIR)/app$(EXE)
+EMBED_BIN := $(BUILD_DIR)/embed$(EXE)
 
 # Common source files in src/ (app.c, ipc.c, memi.c, main.c)
 COMMON_SRCS := $(wildcard $(SRC_DIR)/*.c)
@@ -45,16 +53,17 @@ RESET  := \033[0m
 all: $(TARGET)
 
 # 1. Compile the self-hosted embed tool
-$(BUILD_DIR)/embed: tools/embed.c | $(BUILD_DIR)
+$(EMBED_BIN): tools/embed.c | $(BUILD_DIR)
 	@$(CC) $(CFLAGS) $< -o $@
 
 # 2. Generate bridge.h whenever assets/bridge.js changes
-$(BUILD_DIR)/bridge.h: assets/bridge.js $(BUILD_DIR)/embed | $(BUILD_DIR)
-	@./$(BUILD_DIR)/embed assets/bridge.js $@ bridge_js
+$(BUILD_DIR)/bridge.h: assets/bridge.js $(EMBED_BIN) | $(BUILD_DIR)
+	@./$(EMBED_BIN) assets/bridge.js $@ bridge_js
 
 $(TARGET): $(OBJS) | $(BUILD_DIR)
 	@printf "  $(GREEN)[LD]$(RESET)    $@\n"
 	@$(CC) $(OBJS) $(PKG_LIBS) -o $@
+	$(COPY_DEPS)
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/bridge.h | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
