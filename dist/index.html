@@ -7,37 +7,100 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="badge">STANDALONE ASSET ENGINE</div>
-      <h1>Sankram Desktop</h1>
-      <p class="subtitle">Loaded directly via native <code>app://</code> scheme &bull; Zero HTTP servers</p>
+  <div class="glow-bg"></div>
+
+  <div class="dashboard">
+    <!-- Header -->
+    <header class="header">
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span class="status-text">C &bull; WEB ENGINE LINKED</span>
+      </div>
+      <h1 class="title">Sankram Desktop</h1>
+      <p class="subtitle">Ultra-lightweight native cross-platform runtime written in pure C</p>
     </header>
 
-    <div class="grid">
-      <!-- Card 1: IPC Invoke -->
-      <div class="card">
-        <h3>1. Bidirectional IPC (JS &rarr; C)</h3>
-        <p>Invoke native C functions via FNV-1a hash table dispatch:</p>
-        <button id="btn-sysinfo">Get System Info</button>
-        <pre id="sysinfo-out">// Click button to fetch from C</pre>
+    <!-- Top KPI Grid -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-label">PLATFORM BACKEND</span>
+        <div class="stat-value" id="val-os">Loading...</div>
+        <span class="stat-sub" id="val-arch">Architecture: Unknown</span>
       </div>
-
-      <!-- Card 2: Push Events -->
-      <div class="card">
-        <h3>2. C Push Events (C &rarr; JS)</h3>
-        <p>Listen for real-time background push events from C:</p>
-        <button id="btn-alert" class="accent">Trigger C Alert</button>
-        <div id="alert-feed">Waiting for events...</div>
+      <div class="stat-card">
+        <span class="stat-label">IPC ROUNDTRIP LATENCY</span>
+        <div class="stat-value" id="val-latency">-- ms</div>
+        <span class="stat-sub">Direct FNV-1a Memory Dispatch</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">PUSH EVENT STREAM</span>
+        <div class="stat-value" id="val-events-count">0 received</div>
+        <span class="stat-sub">Asynchronous C &rarr; JS Emitter</span>
       </div>
     </div>
 
-    <footer>
-      <a href="/about.html" class="nav-link">Go to About Page &rarr;</a>
+    <!-- Main Workspace Grid -->
+    <div class="main-grid">
+      <!-- Card 1: Interactive Command Dispatcher -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon">⚡</div>
+          <div>
+            <h3>Bidirectional IPC Dispatcher</h3>
+            <p>Invoke native C functions via zero-overhead message passing</p>
+          </div>
+        </div>
+
+        <div class="button-group">
+          <button id="btn-sysinfo" class="btn btn-primary">
+            <span>Query System Info</span>
+          </button>
+          <button id="btn-ping" class="btn btn-secondary">
+            <span>Benchmark Latency</span>
+          </button>
+        </div>
+
+        <div class="console-box">
+          <div class="console-header">
+            <span>RESPONSE STREAM</span>
+            <span class="console-status" id="ipc-status">READY</span>
+          </div>
+          <pre id="sysinfo-out">// Click a button above to communicate with C kernel</pre>
+        </div>
+      </div>
+
+      <!-- Card 2: Live Push Event Receiver -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-icon">📡</div>
+          <div>
+            <h3>Real-Time Event Feed</h3>
+            <p>Events dispatched asynchronously by background C threads</p>
+          </div>
+        </div>
+
+        <button id="btn-alert" class="btn btn-accent">
+          <span>Emit C Event (server_alert)</span>
+        </button>
+
+        <div class="event-feed-container">
+          <div class="feed-header">LIVE EVENT LOG</div>
+          <div id="event-feed" class="feed-list">
+            <div class="feed-placeholder">Waiting for native C events...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <a href="/about.html" class="nav-button">
+        <span>Architecture & Platform Specs</span>
+        <span class="arrow">&rarr;</span>
+      </a>
     </footer>
   </div>
 
   <script src="/script.js"></script>
 </body>
 </html>
-

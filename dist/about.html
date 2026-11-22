@@ -7,27 +7,42 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div class="badge">MULTI-PAGE ASSET STREAMING</div>
-      <h1>About This Framework</h1>
-      <p class="subtitle">Multi-page navigation served via <code>GFileInputStream</code></p>
+  <div class="glow-bg"></div>
+
+  <div class="dashboard" style="max-width: 750px;">
+    <header class="header">
+      <div class="status-badge">
+        <span class="status-dot"></span>
+        <span class="status-text">CROSS-PLATFORM ARCHITECTURE</span>
+      </div>
+      <h1 class="title">About Sankram</h1>
+      <p class="subtitle">Minimalist, zero-framework native desktop runtime</p>
     </header>
 
-    <div class="card">
-      <h3>Architecture Overview</h3>
+    <div class="panel" style="margin-bottom: 2rem;">
+      <div class="panel-header">
+        <div class="panel-icon">🏛️</div>
+        <div>
+          <h3>System Architecture</h3>
+          <p>Native OS bindings with zero third-party framework overhead</p>
+        </div>
+      </div>
+
       <ul class="feature-list">
-        <li><strong>Window Engine:</strong> GTK 4 + WebKitGTK 6.0</li>
-        <li><strong>IPC Dispatcher:</strong> $O(1)$ FNV-1a Hash Table (Zero malloc)</li>
-        <li><strong>Asset Protocol:</strong> Custom <code>app://</code> Scheme with FNV MIME Dispatcher</li>
-        <li><strong>Event System:</strong> Map & Set Event Registry with React-ready <code>unlisten()</code></li>
+        <li><strong>Windows Backend:</strong> Win32 + Chromium Edge (WebView2 COM)</li>
+        <li><strong>Linux Backend:</strong> GTK 4 + WebKitGTK 6.0</li>
+        <li><strong>IPC Dispatcher:</strong> Compile-time FNV-1a Hash Table ($O(1)$ dispatch)</li>
+        <li><strong>Asset Protocol:</strong> Virtual Host & Scheme Mapping &bull; Zero local HTTP servers</li>
+        <li><strong>Binary Footprint:</strong> ~50 KB native C executable</li>
       </ul>
     </div>
 
-    <footer>
-      <a href="/index.html" class="nav-link">&larr; Back to Home</a>
+    <footer class="footer">
+      <a href="/index.html" class="nav-button">
+        <span class="arrow">&larr;</span>
+        <span>Back to Mission Control</span>
+      </a>
     </footer>
   </div>
 </body>
 </html>
-
