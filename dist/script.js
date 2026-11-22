@@ -20,7 +20,7 @@ async function loadSystemStats() {
   try {
     status.textContent = "QUERYING...";
     const start = performance.now();
-    const res = await window.myapp.invoke("get_sysinfo");
+    const res = await window.vyom.invoke("get_sysinfo");
     const elapsed = (performance.now() - start).toFixed(2);
 
     const parsed = JSON.parse(res);
@@ -47,7 +47,7 @@ document.getElementById("btn-sysinfo").addEventListener("click", async () => {
 
   const t0 = performance.now();
   try {
-    const res = await window.myapp.invoke("get_sysinfo");
+    const res = await window.vyom.invoke("get_sysinfo");
     const delta = (performance.now() - t0).toFixed(2);
     document.getElementById("val-latency").textContent = `${delta} ms`;
     out.textContent = `// Latency: ${delta} ms\n` + formatOutput(res);
@@ -67,7 +67,7 @@ document.getElementById("btn-ping").addEventListener("click", async () => {
   const samples = [];
   for (let i = 0; i < 5; i++) {
     const start = performance.now();
-    await window.myapp.invoke("get_sysinfo");
+    await window.vyom.invoke("get_sysinfo");
     samples.push(performance.now() - start);
   }
 
@@ -87,14 +87,14 @@ document.getElementById("btn-ping").addEventListener("click", async () => {
 // 4. Button: Trigger C Alert
 document.getElementById("btn-alert").addEventListener("click", async () => {
   try {
-    await window.myapp.invoke("trigger_alert");
+    await window.vyom.invoke("trigger_alert");
   } catch (err) {
     console.error("Trigger error:", err);
   }
 });
 
 // 5. C Push Event Listener
-window.myapp.on("server_alert", (data) => {
+window.vyom.on("server_alert", (data) => {
   eventCount++;
   document.getElementById("val-events-count").textContent = `${eventCount} received`;
 

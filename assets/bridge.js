@@ -1,4 +1,4 @@
-window.myapp = {
+window.vyom = {
   _reqId: 0,
   _listeners: new Map(),
 

@@ -75,7 +75,7 @@ static void windows_ipc_handle_message(ICoreWebView2 *sender, const char *json)
 void ipc_reply_send(ipc_reply_t *reply, const char *json_response) 
 {
     char script[4096];
-    snprintf(script, sizeof(script), "window.myapp._emit('__reply_%d', { result: %s });", reply->id, json_response);
+    snprintf(script, sizeof(script), "window.vyom._emit('__reply_%d', { result: %s });", reply->id, json_response);
 
     wchar_t script_w[4096];
     MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);
@@ -85,7 +85,7 @@ void ipc_reply_send(ipc_reply_t *reply, const char *json_response)
 void ipc_reply_error(ipc_reply_t *reply, const char *error_message) 
 {
     char script[4096];
-    snprintf(script, sizeof(script), "window.myapp._emit('__reply_%d', { error: '%s' });", reply->id, error_message);
+    snprintf(script, sizeof(script), "window.vyom._emit('__reply_%d', { error: '%s' });", reply->id, error_message);
 
     wchar_t script_w[4096];
     MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);

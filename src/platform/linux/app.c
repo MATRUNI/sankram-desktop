@@ -155,7 +155,7 @@ void platform_app_emit(const char *event, const char *json_data)
 
     const char *payload = (json_data && *json_data) ? json_data : "null";
 
-    char *script = g_strdup_printf("window.myapp._emit(\"%s\", %s);", event, payload);
+    char *script = g_strdup_printf("window.vyom._emit(\"%s\", %s);", event, payload);
     webkit_web_view_evaluate_javascript( WEBKIT_WEB_VIEW(g_active_webview),script,-1,NULL, NULL, NULL, NULL, NULL);
     g_free(script);
 }

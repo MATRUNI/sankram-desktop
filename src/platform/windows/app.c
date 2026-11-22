@@ -146,7 +146,7 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
     if (config->window->title) {
         MultiByteToWideChar(CP_UTF8, 0, config->window->title, -1, title_w, 256);
     }
-    wc.lpszClassName = L"SankramDesktop";
+    wc.lpszClassName = L"VyomWindow";
     wc.lpfnWndProc = WndProc;
 
     RegisterClassExW(&wc);
@@ -162,7 +162,7 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
     HWND hwnd = CreateWindowExW
     (
         0,
-        L"SankramDesktop",
+        L"VyomWindow",
         title_w,
         style,
         CW_USEDEFAULT,
@@ -206,7 +206,7 @@ void platform_app_emit(const char *event, const char *json_data)
     const char *payload = (json_data && *json_data) ? json_data : "null";
 
     char script[4096];
-    snprintf(script, sizeof(script), "window.myapp._emit(\"%s\", %s);", event, payload);
+    snprintf(script, sizeof(script), "window.vyom._emit(\"%s\", %s);", event, payload);
 
     wchar_t script_w[4096];
     MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);
