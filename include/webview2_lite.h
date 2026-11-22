@@ -41,6 +41,8 @@ typedef struct ICoreWebView2CreateCoreWebView2ControllerCompletedHandler ICoreWe
 typedef struct ICoreWebView2WebMessageReceivedEventHandler ICoreWebView2WebMessageReceivedEventHandler;
 typedef struct ICoreWebView2WebMessageReceivedEventArgs ICoreWebView2WebMessageReceivedEventArgs;
 typedef struct ICoreWebView2ExecuteScriptCompletedHandler ICoreWebView2ExecuteScriptCompletedHandler;
+typedef struct ICoreWebView2NavigationStartingEventArgs ICoreWebView2NavigationStartingEventArgs;
+typedef struct ICoreWebView2NavigationStartingEventHandler ICoreWebView2NavigationStartingEventHandler;
 
 // 1. Environment Completed Handler
 typedef struct ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl {
@@ -151,6 +153,36 @@ struct ICoreWebView2ExecuteScriptCompletedHandler {
     ICoreWebView2ExecuteScriptCompletedHandlerVtbl *lpVtbl;
 };
 
+// 7b. NavigationStarting Event Args
+typedef struct ICoreWebView2NavigationStartingEventArgsVtbl {
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(ICoreWebView2NavigationStartingEventArgs *This, REFIID riid, void **ppvObject);
+    ULONG   (STDMETHODCALLTYPE *AddRef)(ICoreWebView2NavigationStartingEventArgs *This);
+    ULONG   (STDMETHODCALLTYPE *Release)(ICoreWebView2NavigationStartingEventArgs *This);
+    HRESULT (STDMETHODCALLTYPE *get_Uri)(ICoreWebView2NavigationStartingEventArgs *This, LPWSTR *uri);
+    HRESULT (STDMETHODCALLTYPE *get_IsUserInitiated)(ICoreWebView2NavigationStartingEventArgs *This, BOOL *isUserInitiated);
+    HRESULT (STDMETHODCALLTYPE *get_IsRedirected)(ICoreWebView2NavigationStartingEventArgs *This, BOOL *isRedirected);
+    HRESULT (STDMETHODCALLTYPE *get_RequestHeaders)(ICoreWebView2NavigationStartingEventArgs *This, void **requestHeaders);
+    HRESULT (STDMETHODCALLTYPE *get_Cancel)(ICoreWebView2NavigationStartingEventArgs *This, BOOL *cancel);
+    HRESULT (STDMETHODCALLTYPE *put_Cancel)(ICoreWebView2NavigationStartingEventArgs *This, BOOL cancel);
+    HRESULT (STDMETHODCALLTYPE *get_NavigationId)(ICoreWebView2NavigationStartingEventArgs *This, UINT64 *navigationId);
+} ICoreWebView2NavigationStartingEventArgsVtbl;
+
+struct ICoreWebView2NavigationStartingEventArgs {
+    ICoreWebView2NavigationStartingEventArgsVtbl *lpVtbl;
+};
+
+// 7c. NavigationStarting Event Handler
+typedef struct ICoreWebView2NavigationStartingEventHandlerVtbl {
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(ICoreWebView2NavigationStartingEventHandler *This, REFIID riid, void **ppvObject);
+    ULONG   (STDMETHODCALLTYPE *AddRef)(ICoreWebView2NavigationStartingEventHandler *This);
+    ULONG   (STDMETHODCALLTYPE *Release)(ICoreWebView2NavigationStartingEventHandler *This);
+    HRESULT (STDMETHODCALLTYPE *Invoke)(ICoreWebView2NavigationStartingEventHandler *This, ICoreWebView2 *sender, ICoreWebView2NavigationStartingEventArgs *args);
+} ICoreWebView2NavigationStartingEventHandlerVtbl;
+
+struct ICoreWebView2NavigationStartingEventHandler {
+    ICoreWebView2NavigationStartingEventHandlerVtbl *lpVtbl;
+};
+
 // 8. CoreWebView2
 typedef struct ICoreWebView2Vtbl {
     HRESULT (STDMETHODCALLTYPE *QueryInterface)(ICoreWebView2 *This, REFIID riid, void **ppvObject);
@@ -160,8 +192,8 @@ typedef struct ICoreWebView2Vtbl {
     HRESULT (STDMETHODCALLTYPE *get_Source)(ICoreWebView2 *This, LPWSTR *uri);
     HRESULT (STDMETHODCALLTYPE *Navigate)(ICoreWebView2 *This, LPCWSTR uri);
     HRESULT (STDMETHODCALLTYPE *NavigateToString)(ICoreWebView2 *This, LPCWSTR htmlContent);
-    void *add_NavigationStarting;
-    void *remove_NavigationStarting;
+    HRESULT (STDMETHODCALLTYPE *add_NavigationStarting)(ICoreWebView2 *This, ICoreWebView2NavigationStartingEventHandler *eventHandler, EventRegistrationToken *token);
+    HRESULT (STDMETHODCALLTYPE *remove_NavigationStarting)(ICoreWebView2 *This, EventRegistrationToken token);
     void *add_ContentLoading;
     void *remove_ContentLoading;
     void *add_SourceChanged;

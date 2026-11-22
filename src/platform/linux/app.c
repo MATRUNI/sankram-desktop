@@ -51,31 +51,43 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
 {
     app_config_t *con =(app_config_t *) user_data;
 
+    // -------------------------------------------------------------------------
+    // 1. GTK4 WINDOW INITIALIZATION (Title & Dimensions)
+    // -------------------------------------------------------------------------
     GtkWidget *window = gtk_application_window_new(app);
-    gtk_window_set_title(GTK_WINDOW(window),con->window->title);
-    gtk_window_set_default_size(GTK_WINDOW(window),con->window->width,con->window->height);
+    gtk_window_set_title(GTK_WINDOW(window), con->window->title);
+    gtk_window_set_default_size(GTK_WINDOW(window), con->window->width, con->window->height);
     
     GtkWidget *webview = webkit_web_view_new();
-
     g_active_webview = webview;
 
     gtk_widget_set_hexpand(webview, TRUE);
     gtk_widget_set_vexpand(webview, TRUE);
 
+    // -------------------------------------------------------------------------
+    // 2. WEBKIT BROWSER SETTINGS (Developer Tools & Security)
+    // -------------------------------------------------------------------------
     WebKitSettings *settings = webkit_web_view_get_settings(WEBKIT_WEB_VIEW(webview));
-    // webkit_settings_set_enable_developer_extras(settings, con->webview->developer_extras);
-    webkit_settings_set_disable_web_security(settings,con->webview->disable_web_security);
-    if(con->webview->developer_extras)
+    webkit_settings_set_disable_web_security(settings, con->webview->disable_web_security);
+    if (con->webview->developer_extras)
     {
+        // developer_extras: Show WebKit Web Inspector
         WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
         webkit_web_inspector_show(inspector);
     }
 
-    gtk_window_set_resizable(GTK_WINDOW(window),con->window->resizable);
-    gtk_widget_set_size_request(window,con->window->min_width,con->window->min_height);
-    gtk_window_set_decorated(GTK_WINDOW(window),con->window->decorations);
-    gtk_window_set_child(GTK_WINDOW(window),webview);
+    // -------------------------------------------------------------------------
+    // 3. WINDOW BEHAVIOR & CONSTRAINTS (Decorations, Resizing, Min Size)
+    // -------------------------------------------------------------------------
+    // resizable: Allow or prevent window resizing
+    gtk_window_set_resizable(GTK_WINDOW(window), con->window->resizable);
+    // min_width & min_height: Enforce minimum size limits
+    gtk_widget_set_size_request(window, con->window->min_width, con->window->min_height);
+    // decorations: Show or hide window titlebar & system borders (frameless mode)
+    gtk_window_set_decorated(GTK_WINDOW(window), con->window->decorations);
+    gtk_window_set_child(GTK_WINDOW(window), webview);
 
+    // maximized & fullscreen states
     if (con->window->maximized) {
         gtk_window_maximize(GTK_WINDOW(window));
     }
@@ -83,23 +95,29 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
         gtk_window_fullscreen(GTK_WINDOW(window));
     }
 
+    // icon_name: System icon from GTK icon theme
     if (con->window->icon_name) {
         gtk_window_set_icon_name(GTK_WINDOW(window), con->window->icon_name);
     }
 
+    // -------------------------------------------------------------------------
+    // 4. WEBKIT FEATURE FLAGS (User-Agent, JS, Images, Popup Windows)
+    // -------------------------------------------------------------------------
     if (con->webview->user_agent) {
         webkit_settings_set_user_agent(settings, con->webview->user_agent);
     }
 
     webkit_settings_set_enable_javascript(settings, con->webview->javascript_enabled);
-
     webkit_settings_set_auto_load_images(settings, con->webview->auto_load_images);
-
     webkit_settings_set_javascript_can_open_windows_automatically(settings, con->webview->javascript_can_open_windows);
     
+    // -------------------------------------------------------------------------
+    // 5. IPC & SCRIPT INJECTION (Bridge, Startup Scripts, Custom CSS)
+    // -------------------------------------------------------------------------
     WebKitUserContentManager *manager = webkit_web_view_get_user_content_manager(WEBKIT_WEB_VIEW(webview));
     ipc_init(manager);
     
+    // Inject the Vyom IPC bridge at document start
     WebKitUserScript *bridge_script = webkit_user_script_new(
         bridge_js,
         WEBKIT_USER_CONTENT_INJECT_ALL_FRAMES,
@@ -109,6 +127,7 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     webkit_user_content_manager_add_script(manager, bridge_script);
     webkit_user_script_unref(bridge_script);
 
+    // Optional user startup script
     if (con->webview->startup_script) {
         WebKitUserScript *script = webkit_user_script_new(
             con->webview->startup_script,
@@ -120,6 +139,7 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
         webkit_user_script_unref(script);
     }
 
+    // Optional user custom stylesheet
     if (con->webview->custom_css) {
         WebKitUserStyleSheet *style = webkit_user_style_sheet_new(
             con->webview->custom_css,

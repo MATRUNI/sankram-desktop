@@ -1,3 +1,14 @@
+// SPA HTML5 History Route Restoration (restores /route if rewritten by native fallback)
+(function () {
+  try {
+    const url = new URL(window.location.href);
+    const route = url.searchParams.get("__route");
+    if (route) {
+      window.history.replaceState(null, "", route);
+    }
+  } catch (e) {}
+})();
+
 window.vyom = {
   _reqId: 0,
   _listeners: new Map(),
