@@ -178,7 +178,7 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
     HMODULE hLoader = LoadLibraryW(L"WebView2Loader.dll");
     if (hLoader) 
     {
-        CreateCoreWebView2EnvironmentWithOptionsFn create_env = (CreateCoreWebView2EnvironmentWithOptionsFn)GetProcAddress(hLoader, "CreateCoreWebView2EnvironmentWithOptions");
+        CreateCoreWebView2EnvironmentWithOptionsFn create_env = (CreateCoreWebView2EnvironmentWithOptionsFn)(void *)GetProcAddress(hLoader, "CreateCoreWebView2EnvironmentWithOptions");
         if (create_env) 
         {
             create_env(NULL, NULL, NULL, &EnvHandler);

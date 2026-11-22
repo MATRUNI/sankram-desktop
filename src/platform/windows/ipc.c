@@ -3,21 +3,11 @@
 #include <stdio.h>
 
 #include "ipc.h"
-#include "hash.h"
-
-#define CMD_TABLE_SIZE 64
+#include "registry.h"
 struct ipc_reply {
     int id;
     ICoreWebView2 *webview;
 };
-
-typedef struct {
-    char name[32];
-    uint32_t hash;
-    app_command_fn handler;
-} cmd_entry_t;
-
-static cmd_entry_t cmd_table[CMD_TABLE_SIZE];
 
 static HRESULT STDMETHODCALLTYPE dummy_QueryInterface(void *This, REFIID riid, void **ppv) {
     (void)This; (void)riid; *ppv = NULL; return E_NOINTERFACE;
@@ -29,41 +19,6 @@ static ULONG STDMETHODCALLTYPE dummy_AddRef(void *This) {
 
 static ULONG STDMETHODCALLTYPE dummy_Release(void *This) { 
     (void)This; return 1; 
-}
-
-void app_bind_command(const char *name, app_command_fn handler)
-{
-    uint32_t hash = fnv1a_32(name);
-    uint32_t idx = hash & (CMD_TABLE_SIZE - 1);
-
-    for (int i = 0; i < CMD_TABLE_SIZE; i++)
-    {
-        uint32_t slot = (idx + i) & (CMD_TABLE_SIZE - 1);  // Linear probing
-
-        if (cmd_table[slot].handler == NULL || strcmp(cmd_table[slot].name, name) == 0) 
-        {
-            strncpy(cmd_table[slot].name, name, sizeof(cmd_table[slot].name) - 1);
-            cmd_table[slot].hash = hash;
-            cmd_table[slot].handler = handler;
-            return;
-        }
-    }
-}
-
-static app_command_fn lookup_command(const char *name) 
-{
-    uint32_t hash = fnv1a_32(name);
-    uint32_t idx = hash % CMD_TABLE_SIZE;
-    for (int i = 0; i < CMD_TABLE_SIZE; i++) 
-    {
-        uint32_t slot = (idx + i) % CMD_TABLE_SIZE;
-        if (cmd_table[slot].hash == hash && strcmp(cmd_table[slot].name, name) == 0) 
-        {
-            return cmd_table[slot].handler;
-        }
-        if (cmd_table[slot].name[0] == '\0') break;
-    }
-    return NULL;
 }
 
 static void windows_ipc_handle_message(ICoreWebView2 *sender, const char *json) 
