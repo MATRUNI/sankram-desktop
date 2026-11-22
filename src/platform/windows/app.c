@@ -1,5 +1,6 @@
 #include <windows.h>
-#include "WebView2_lite.h"
+#include <stdio.h>
+#include "webview2_lite.h"
 #include "app.h"
 static ICoreWebView2Controller *g_controller = NULL;
 static ICoreWebView2 *g_webview    = NULL;
@@ -26,6 +27,7 @@ static HRESULT STDMETHODCALLTYPE OnControllerCreated(ICoreWebView2CreateCoreWebV
     controller->lpVtbl->AddRef(controller);
 
     controller->lpVtbl->get_CoreWebView2(controller, &g_webview);
+    windows_ipc_init(g_webview);
     g_webview->lpVtbl->AddRef(g_webview);
 
     RECT bounds;
@@ -161,8 +163,17 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
     }
     return (int)msg.wParam;
 }
+
 void platform_app_emit(const char *event, const char *json_data) 
 {
-    (void)event;
-    (void)json_data;
+    if (!g_webview || !event) return;
+
+    const char *payload = (json_data && *json_data) ? json_data : "null";
+
+    char script[4096];
+    snprintf(script, sizeof(script), "window.myapp._emit(\"%s\", %s);", event, payload);
+
+    wchar_t script_w[4096];
+    MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);
+    g_webview->lpVtbl->ExecuteScript(g_webview, script_w, NULL);
 }

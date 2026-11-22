@@ -1,10 +1,31 @@
 window.myapp = {
+  _reqId: 0,
   _listeners: new Map(),
 
   // JavaScript -> C (Commands)
   invoke: function (cmd, args = {}) 
   {
-    return window.webkit.messageHandlers.desktop.postMessage({ cmd, args });
+    if(window.webkit?.messageHandlers?.desktop)
+    {
+      return window.webkit.messageHandlers.desktop.postMessage({ cmd, args });
+    }
+    if(window?.chrome?.webview)
+    {
+      return new Promise((resolve, reject) => {
+        const id = ++this._reqId;
+        const replyEvent = `__reply_${id}`;
+        
+        const handler = (res) => {
+          this.off(replyEvent, handler);
+          if (res.error) reject(new Error(res.error));
+          else resolve(res.result);
+        };
+        this.on(replyEvent, handler);
+        window.chrome.webview.postMessage({ id, cmd, args });
+      });
+    }
+
+    return Promise.reject(new Error("No native platform detected."));
   },
 
   // C -> JavaScript (Events)

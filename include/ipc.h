@@ -5,6 +5,9 @@
 #include <gtk/gtk.h>
 #include <webkit/webkit.h>
 void ipc_init(WebKitUserContentManager *manager);
+#elif defined(__WIN32)
+typedef struct ICoreWebView2 ICoreWebView2;
+void windows_ipc_init(ICoreWebView2 *webview); 
 #endif
 
 typedef struct ipc_reply ipc_reply_t;
