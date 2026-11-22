@@ -2,10 +2,11 @@
 #include <stdio.h>
 #include "webview2_lite.h"
 #include "app.h"
+#include "bridge.h"
 static ICoreWebView2Controller *g_controller = NULL;
 static ICoreWebView2 *g_webview    = NULL;
 static HWND g_hwnd = NULL;
-
+static const app_config_t *g_config = NULL;
 static HRESULT STDMETHODCALLTYPE dummy_QueryInterface(void *This, REFIID riid, void **ppv) {
     (void)This; (void)riid;
     *ppv = NULL;
@@ -28,14 +29,38 @@ static HRESULT STDMETHODCALLTYPE OnControllerCreated(ICoreWebView2CreateCoreWebV
 
     controller->lpVtbl->get_CoreWebView2(controller, &g_webview);
     windows_ipc_init(g_webview);
+    wchar_t bridge_w[4096];
+    MultiByteToWideChar(CP_UTF8, 0, bridge_js, -1, bridge_w, 4096);
+    g_webview->lpVtbl->AddScriptToExecuteOnDocumentCreated(g_webview, bridge_w, NULL);
     g_webview->lpVtbl->AddRef(g_webview);
-
+    ICoreWebView2Settings *settings = NULL;
+    g_webview->lpVtbl->get_Settings(g_webview, (void**)&settings);
+    if (settings && g_config && g_config->webview) 
+    {
+        settings->lpVtbl->put_AreDevToolsEnabled(settings, g_config->webview->developer_extras);
+    
+        settings->lpVtbl->put_AreDefaultContextMenusEnabled(settings, g_config->webview->enable_context_menu);
+        
+        settings->lpVtbl->put_IsScriptEnabled(settings, g_config->webview->javascript_enabled);
+        settings->lpVtbl->Release(settings);
+    }
     RECT bounds;
     GetClientRect(g_hwnd, &bounds);
     controller->lpVtbl->put_Bounds(controller, bounds);
     controller->lpVtbl->put_IsVisible(controller, TRUE);
 
-    g_webview->lpVtbl->Navigate(g_webview, L"https://www.google.com");
+    wchar_t dist_path[MAX_PATH];
+    GetFullPathNameW(L"dist", MAX_PATH, dist_path, NULL);
+
+    ICoreWebView2_3 *wv3 = NULL;
+    g_webview->lpVtbl->QueryInterface(g_webview, &IID_ICoreWebView2_3, (void**)&wv3);
+    if (wv3) 
+    {
+        wv3->lpVtbl->SetVirtualHostNameToFolderMapping(wv3,L"app.localhost",dist_path,COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW);
+        wv3->lpVtbl->Release(wv3);
+    }
+
+    g_webview->lpVtbl->Navigate(g_webview, L"https://app.localhost/index.html");
 
     return S_OK;
 }
@@ -92,6 +117,13 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_GETMINMAXINFO: 
         {
             MINMAXINFO *mmi = (MINMAXINFO *)lParam;
+            if (g_config && g_config->window) 
+            {
+                if (g_config->window->min_width) mmi->ptMinTrackSize.x = g_config->window->min_width;
+                if (g_config->window->min_height) mmi->ptMinTrackSize.y = g_config->window->min_height;
+                if (g_config->window->max_width)  mmi->ptMaxTrackSize.x = g_config->window->max_width;
+                if (g_config->window->max_height) mmi->ptMaxTrackSize.y = g_config->window->max_height;
+            }
             return 0;
         }
     }
@@ -102,8 +134,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 int platform_app_run(const app_config_t *config, int argc, char *argv[]) 
 {
     HINSTANCE hInstance = GetModuleHandle(NULL);
+    (void)argc;
+    (void)argv;
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     WNDCLASSEXW wc = {0};
+    g_config = config;
 
     wc.hInstance = hInstance;
     wc.cbSize = sizeof(WNDCLASSEXW);

@@ -13,6 +13,29 @@ typedef struct ICoreWebView2Controller ICoreWebView2Controller;
 typedef struct ICoreWebView2Environment ICoreWebView2Environment;
 typedef struct ICoreWebView2Settings ICoreWebView2Settings;
 
+// Settings interface
+typedef struct ICoreWebView2SettingsVtbl {
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(ICoreWebView2Settings *This, REFIID riid, void **ppvObject);
+    ULONG   (STDMETHODCALLTYPE *AddRef)(ICoreWebView2Settings *This);
+    ULONG   (STDMETHODCALLTYPE *Release)(ICoreWebView2Settings *This);
+    HRESULT (STDMETHODCALLTYPE *get_IsScriptEnabled)(ICoreWebView2Settings *This, BOOL *isScriptEnabled);
+    HRESULT (STDMETHODCALLTYPE *put_IsScriptEnabled)(ICoreWebView2Settings *This, BOOL isScriptEnabled);
+    HRESULT (STDMETHODCALLTYPE *get_IsWebMessageEnabled)(ICoreWebView2Settings *This, BOOL *isWebMessageEnabled);
+    HRESULT (STDMETHODCALLTYPE *put_IsWebMessageEnabled)(ICoreWebView2Settings *This, BOOL isWebMessageEnabled);
+    HRESULT (STDMETHODCALLTYPE *get_AreDefaultScriptDialogsEnabled)(ICoreWebView2Settings *This, BOOL *areDefaultScriptDialogsEnabled);
+    HRESULT (STDMETHODCALLTYPE *put_AreDefaultScriptDialogsEnabled)(ICoreWebView2Settings *This, BOOL areDefaultScriptDialogsEnabled);
+    HRESULT (STDMETHODCALLTYPE *get_IsStatusBarEnabled)(ICoreWebView2Settings *This, BOOL *isStatusBarEnabled);
+    HRESULT (STDMETHODCALLTYPE *put_IsStatusBarEnabled)(ICoreWebView2Settings *This, BOOL isStatusBarEnabled);
+    HRESULT (STDMETHODCALLTYPE *get_AreDevToolsEnabled)(ICoreWebView2Settings *This, BOOL *areDevToolsEnabled);
+    HRESULT (STDMETHODCALLTYPE *put_AreDevToolsEnabled)(ICoreWebView2Settings *This, BOOL areDevToolsEnabled);
+    HRESULT (STDMETHODCALLTYPE *get_AreDefaultContextMenusEnabled)(ICoreWebView2Settings *This, BOOL *enabled);
+    HRESULT (STDMETHODCALLTYPE *put_AreDefaultContextMenusEnabled)(ICoreWebView2Settings *This, BOOL enabled);
+} ICoreWebView2SettingsVtbl;
+
+struct ICoreWebView2Settings {
+    ICoreWebView2SettingsVtbl *lpVtbl;
+};
+
 typedef struct ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler;
 typedef struct ICoreWebView2CreateCoreWebView2ControllerCompletedHandler ICoreWebView2CreateCoreWebView2ControllerCompletedHandler;
 typedef struct ICoreWebView2WebMessageReceivedEventHandler ICoreWebView2WebMessageReceivedEventHandler;
@@ -172,7 +195,101 @@ struct ICoreWebView2 {
     ICoreWebView2Vtbl *lpVtbl;
 };
 
-// 9. Function pointer for CreateCoreWebView2EnvironmentWithOptions
+// 9. ICoreWebView2_3 for Virtual Host Mapping
+typedef struct ICoreWebView2_3 ICoreWebView2_3;
+typedef enum COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND {
+    COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_DENY = 0,
+    COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_ALLOW = 1,
+    COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND_DENY_CORS = 2
+} COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND;
+
+static const IID IID_ICoreWebView2_3 = { 0xa0d6df20, 0x3b92, 0x416d, { 0xaa, 0x0c, 0x43, 0x7a, 0x9c, 0x72, 0x78, 0x57 } };
+
+typedef struct ICoreWebView2_3Vtbl {
+    // IUnknown
+    HRESULT (STDMETHODCALLTYPE *QueryInterface)(ICoreWebView2_3 *This, REFIID riid, void **ppvObject);
+    ULONG   (STDMETHODCALLTYPE *AddRef)(ICoreWebView2_3 *This);
+    ULONG   (STDMETHODCALLTYPE *Release)(ICoreWebView2_3 *This);
+    // ICoreWebView2 base methods
+    HRESULT (STDMETHODCALLTYPE *get_Settings)(ICoreWebView2_3 *This, void **settings);
+    HRESULT (STDMETHODCALLTYPE *get_Source)(ICoreWebView2_3 *This, LPWSTR *uri);
+    HRESULT (STDMETHODCALLTYPE *Navigate)(ICoreWebView2_3 *This, LPCWSTR uri);
+    HRESULT (STDMETHODCALLTYPE *NavigateToString)(ICoreWebView2_3 *This, LPCWSTR htmlContent);
+    void *add_NavigationStarting;
+    void *remove_NavigationStarting;
+    void *add_ContentLoading;
+    void *remove_ContentLoading;
+    void *add_SourceChanged;
+    void *remove_SourceChanged;
+    void *add_HistoryChanged;
+    void *remove_HistoryChanged;
+    void *add_NavigationCompleted;
+    void *remove_NavigationCompleted;
+    void *add_FrameNavigationStarting;
+    void *remove_FrameNavigationStarting;
+    void *add_FrameNavigationCompleted;
+    void *remove_FrameNavigationCompleted;
+    void *add_ScriptDialogOpening;
+    void *remove_ScriptDialogOpening;
+    void *add_PermissionRequested;
+    void *remove_PermissionRequested;
+    void *add_ProcessFailed;
+    void *remove_ProcessFailed;
+    HRESULT (STDMETHODCALLTYPE *AddScriptToExecuteOnDocumentCreated)(ICoreWebView2_3 *This, LPCWSTR javaScript, void *handler);
+    void *remove_AddScriptToExecuteOnDocumentCreated;
+    HRESULT (STDMETHODCALLTYPE *ExecuteScript)(ICoreWebView2_3 *This, LPCWSTR javaScript, ICoreWebView2ExecuteScriptCompletedHandler *handler);
+    void *CapturePreview;
+    void *Reload;
+    HRESULT (STDMETHODCALLTYPE *PostWebMessageAsJson)(ICoreWebView2_3 *This, LPCWSTR webMessageAsJson);
+    HRESULT (STDMETHODCALLTYPE *PostWebMessageAsString)(ICoreWebView2_3 *This, LPCWSTR webMessageAsString);
+    HRESULT (STDMETHODCALLTYPE *add_WebMessageReceived)(ICoreWebView2_3 *This, ICoreWebView2WebMessageReceivedEventHandler *handler, EventRegistrationToken *token);
+    HRESULT (STDMETHODCALLTYPE *remove_WebMessageReceived)(ICoreWebView2_3 *This, EventRegistrationToken token);
+    void *CallDevToolsProtocolMethod;
+    void *get_BrowserProcessId;
+    void *get_CanGoBack;
+    void *get_CanGoForward;
+    void *GoBack;
+    void *GoForward;
+    void *GetDevToolsProtocolEventReceiver;
+    void *Stop;
+    void *add_NewWindowRequested;
+    void *remove_NewWindowRequested;
+    void *add_DocumentTitleChanged;
+    void *remove_DocumentTitleChanged;
+    void *get_DocumentTitle;
+    void *AddHostObjectToScript;
+    void *RemoveHostObjectFromScript;
+    void *OpenDevToolsWindow;
+    void *add_ContainsFullScreenElementChanged;
+    void *remove_ContainsFullScreenElementChanged;
+    void *get_ContainsFullScreenElement;
+    void *add_WebResourceRequested;
+    void *remove_WebResourceRequested;
+    void *AddWebResourceRequestedFilter;
+    void *RemoveWebResourceRequestedFilter;
+    void *add_WindowCloseRequested;
+    void *remove_WindowCloseRequested;
+    // ICoreWebView2_2 methods
+    void *add_WebResourceResponseReceived;
+    void *remove_WebResourceResponseReceived;
+    void *NavigateWithWebResourceRequest;
+    void *add_DOMContentLoaded;
+    void *remove_DOMContentLoaded;
+    void *get_CookieManager;
+    void *get_Environment;
+    // ICoreWebView2_3 methods
+    void *TrySuspend;
+    void *Resume;
+    void *get_IsSuspended;
+    HRESULT (STDMETHODCALLTYPE *SetVirtualHostNameToFolderMapping)(ICoreWebView2_3 *This, LPCWSTR hostName, LPCWSTR folderPath, COREWEBVIEW2_HOST_RESOURCE_ACCESS_KIND accessKind);
+    HRESULT (STDMETHODCALLTYPE *ClearVirtualHostNameToFolderMapping)(ICoreWebView2_3 *This, LPCWSTR hostName);
+} ICoreWebView2_3Vtbl;
+
+struct ICoreWebView2_3 {
+    ICoreWebView2_3Vtbl *lpVtbl;
+};
+
+// 10. Function pointer for CreateCoreWebView2EnvironmentWithOptions
 typedef HRESULT (STDAPICALLTYPE *CreateCoreWebView2EnvironmentWithOptionsFn)(
     PCWSTR browserExecutableFolder,
     PCWSTR userDataFolder,
