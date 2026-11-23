@@ -21,6 +21,7 @@ window.vyom = {
   },
   dialog:{
     openFile: (options = {}) => window.vyom.invoke("vyom:dialog:open_file", options),
+    saveFile: (options = {}) => window.vyom.invoke("vyom:dialog:save_file", options),
   },
   
   // JavaScript -> C (Commands)

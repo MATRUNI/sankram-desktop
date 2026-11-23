@@ -67,19 +67,11 @@ static void handle_win_start_drag(const char *args, ipc_reply_t *reply)
     ipc_reply_send(reply, "{\"success\": true}");
 }
 
-static void handle_dialog_open_file(const char *args, ipc_reply_t *reply)
-{
-    (void)args;
-    char *path = platform_dialog_open_file("Select File", NULL);
-    if (path) 
-    {
+static void reply_with_path(ipc_reply_t *reply, char *path) {
+    if (path) {
         char json[1024];
-        // Note: Escape backslashes for JSON: C:\foo -> C:\\foo
-        // Or format a clean JSON response
         snprintf(json, sizeof(json), "{\"canceled\": false, \"path\": \"%s\"}", path);
-        // Replace single \ with / or escape them so JSON parses cleanly
-        for (char *p = json; *p; p++) 
-        {
+        for (char *p = json; *p; p++) {
             if (*p == '\\') *p = '/';
         }
         ipc_reply_send(reply, json);
@@ -87,6 +79,38 @@ static void handle_dialog_open_file(const char *args, ipc_reply_t *reply)
     } else {
         ipc_reply_send(reply, "{\"canceled\": true, \"path\": null}");
     }
+}
+
+// Now both handlers become 2 lines!
+static void handle_dialog_open_file(const char *args, ipc_reply_t *reply) {
+    (void)args;
+    reply_with_path(reply, platform_dialog_open_file("Select File", NULL));
+}
+
+static void handle_dialog_save_file(const char *args, ipc_reply_t *reply) 
+{
+    char default_name[128] = "untitled.txt"; // Fallback default
+    // Extract "defaultName": "<string>" if provided in args
+    const char *name_ptr = strstr(args, "\"defaultName\":");
+    if (name_ptr) 
+    {
+        name_ptr = strchr(name_ptr + 14, '"');
+        if (name_ptr) 
+        {
+            name_ptr++;
+            const char *end_ptr = strchr(name_ptr, '"');
+            if (end_ptr) 
+            {
+                size_t len = end_ptr - name_ptr;
+                if (len < sizeof(default_name)) 
+                {
+                    strncpy(default_name, name_ptr, len);
+                    default_name[len] = '\0';
+                }
+            }
+        }
+    }
+    reply_with_path(reply, platform_dialog_save_file("Save File", NULL, default_name));
 }
 
 app_command_fn lookup_command(const char *name) 
@@ -105,6 +129,8 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_dialog_open_file;
         case HASH_WIN_START_DRAG:
             return (app_command_fn)handle_win_start_drag;
+        case HASH_DIALOG_SAVE_FILE:
+            return (app_command_fn)handle_dialog_save_file;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);

@@ -415,10 +415,13 @@ void platform_window_start_drag(void)
     SendMessageW(g_hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
 }
 
-char* platform_dialog_open_file(const char *title, const char *filter)
-{
-    (void) filter;
+static char* win32_file_dialog(const char *title, const char *default_name, BOOL is_save) {
+    // Fill OPENFILENAMEW...
     wchar_t file_path[MAX_PATH] = {0};
+    if (default_name && *default_name) 
+    {
+        MultiByteToWideChar(CP_UTF8, 0, default_name, -1, file_path, MAX_PATH - 1);
+    }
     OPENFILENAMEW ofn = {0};
     ofn.lStructSize = sizeof(OPENFILENAMEW);
     ofn.hwndOwner = g_hwnd;               // Parent window (makes it modal)
@@ -426,29 +429,40 @@ char* platform_dialog_open_file(const char *title, const char *filter)
     ofn.nMaxFile = MAX_PATH;
     ofn.lpstrFilter = L"All Files (*.*)\0*.*\0Text Files (*.txt)\0*.txt\0";
     ofn.nFilterIndex = 1;
-    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    ofn.Flags = OFN_PATHMUSTEXIST |  OFN_NOCHANGEDIR;
+    if(is_save)
+        ofn.Flags |= OFN_OVERWRITEPROMPT;
+    else 
+        ofn.Flags |= OFN_FILEMUSTEXIST;
+    
     wchar_t title_w[128] = {0};
-    if (title && *title) {
+    if (title && *title) 
+    {
         MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, 127);
         ofn.lpstrTitle = title_w;
     }
-    if (GetOpenFileNameW(&ofn)) 
-    {
-        // 1. Calculate how many bytes we need in UTF-8
-        int len = WideCharToMultiByte(CP_UTF8, 0, file_path, -1, NULL, 0, NULL, NULL);
-        if (len <= 0) return NULL;
+    BOOL ok = is_save ? GetSaveFileNameW(&ofn) : GetOpenFileNameW(&ofn);
+    if (!ok) return NULL;
+    // UTF-16 to UTF-8 conversion...
+    // 1. Calculate how many bytes we need in UTF-8
+    int len = WideCharToMultiByte(CP_UTF8, 0, file_path, -1, NULL, 0, NULL, NULL);
+    if (len <= 0) return NULL;
+    
+    // 2. Allocate the buffer (caller will free this)
+    char *utf8_path = (char *)malloc(len);
+    if (!utf8_path) return NULL;
+    
+    // 3. Convert UTF-16 -> UTF-8
+    WideCharToMultiByte(CP_UTF8, 0, file_path, -1, utf8_path, len, NULL, NULL);
+    return utf8_path;
+}
 
-        // 2. Allocate the buffer (caller will free this)
-        char *utf8_path = (char *)malloc(len);
-        if (!utf8_path) return NULL;
+char* platform_dialog_open_file(const char *title, const char *filter) {
+    (void)filter;
+    return win32_file_dialog(title, NULL, FALSE);
+}
 
-        // 3. Convert UTF-16 -> UTF-8
-        WideCharToMultiByte(CP_UTF8, 0, file_path, -1, utf8_path, len, NULL, NULL);
-        return utf8_path;
-    }
-    else
-    {
-        // User clicked Cancel or closed the dialog
-        return NULL;
-    }
+char* platform_dialog_save_file(const char *title, const char *filter, const char *default_name) {
+    (void)filter;
+    return win32_file_dialog(title, default_name, TRUE);
 }

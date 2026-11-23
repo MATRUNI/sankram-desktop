@@ -276,8 +276,51 @@ char* platform_dialog_open_file(const char *title, const char *filter)
     return state.selected_path;
 }
 
+static void on_save_finish(GObject *source, GAsyncResult *result, gpointer user_data) 
+{
+    dialog_state_t *state = (dialog_state_t *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+    GFile *file = gtk_file_dialog_save_finish(dialog, result, &error);
+    if (file) 
+    {
+        char *path = g_file_get_path(file);
+        if (path) 
+        {
+            state->selected_path = g_strdup(path);
+            g_free(path);
+        }
+        g_object_unref(file);
+    }
+    if (error) 
+    {
+        g_error_free(error);
+    }
+    state->done = TRUE;
+}
+
 char* platform_dialog_save_file(const char *title, const char *filter, const char *default_name) 
 {
-    (void)title; (void)filter; (void)default_name;
-    return NULL;
+    (void)filter;
+    GtkWindow *parent = g_active_window ? GTK_WINDOW(g_active_window) : NULL;
+
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    if (title && *title)
+        gtk_file_dialog_set_title(dialog, title);
+
+    if (default_name && *default_name)
+        gtk_file_dialog_set_initial_name(dialog, default_name);
+
+    dialog_state_t state = { .done = FALSE, .selected_path = NULL };
+    gtk_file_dialog_save(dialog, parent, NULL, on_save_finish, &state);
+
+    // Pump GLib events while waiting
+    while (!state.done) 
+    {
+        g_main_context_iteration(NULL, TRUE);
+    }
+
+    g_object_unref(dialog);
+    return state.selected_path;
 }
+
