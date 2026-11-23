@@ -95,7 +95,7 @@
       <div class="telemetry-card">
         <span class="card-id">SPEC // 02</span>
         <h3 class="card-heading">Sub-Millisecond IPC</h3>
-        <p class="card-body">Zero-copy compile-time FNV-1a hash routing with $O(1)$ zero string comparisons.</p>
+        <p class="card-body">Zero-copy compile-time FNV-1a hash routing with O(1) zero string comparisons.</p>
       </div>
 
       <div class="telemetry-card">
@@ -112,14 +112,17 @@
         <span class="strip-status" id="stream-status">STANDBY</span>
       </div>
       <div class="strip-actions">
+        <button id="btn-open-file" class="strip-btn">
+          <span>Choose Native File</span>
+        </button>
         <button id="btn-benchmark" class="strip-btn">
-          <span>Run 10x Latency Cycle</span>
+          <span>10x Latency Cycle</span>
         </button>
         <button id="btn-alert" class="strip-btn">
           <span>Pulse C Event</span>
         </button>
         <a href="/about.html" class="strip-btn strip-link">
-          <span>System Architecture &rarr;</span>
+          <span>Architecture &rarr;</span>
         </a>
       </div>
       <pre class="telemetry-console" id="stream-out">// Telemetry ready. Invoke command to capture live performance metrics.</pre>

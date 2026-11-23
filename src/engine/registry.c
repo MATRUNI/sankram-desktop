@@ -3,10 +3,13 @@
 #include "platform.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #define HASH_WIN_MINIMIZE    0xf460cba8u  // fnv1a_32("vyom:window:minimize")
 #define HASH_WIN_TOGGLE_MAX  0x17a84d23u  // fnv1a_32("vyom:window:toggle_maximize")
 #define HASH_WIN_CLOSE       0x0590e82cu  // fnv1a_32("vyom:window:close")
+#define HASH_DIALOG_OPEN_FILE  0xadfa146fu  // fnv1a_32("vyom:dialog:open_file")
+#define HASH_DIALOG_SAVE_FILE  0x7f7e3624u  // fnv1a_32("vyom:dialog:save_file")
 
 typedef struct {
     char name[32];
@@ -56,6 +59,28 @@ static void handle_win_close(const char *args, ipc_reply_t *reply)
     ipc_reply_send(reply, "{\"success\": true}");
 }
 
+static void handle_dialog_open_file(const char *args, ipc_reply_t *reply)
+{
+    (void)args;
+    char *path = platform_dialog_open_file("Select File", NULL);
+    if (path) 
+    {
+        char json[1024];
+        // Note: Escape backslashes for JSON: C:\foo -> C:\\foo
+        // Or format a clean JSON response
+        snprintf(json, sizeof(json), "{\"canceled\": false, \"path\": \"%s\"}", path);
+        // Replace single \ with / or escape them so JSON parses cleanly
+        for (char *p = json; *p; p++) 
+        {
+            if (*p == '\\') *p = '/';
+        }
+        ipc_reply_send(reply, json);
+        free(path);
+    } else {
+        ipc_reply_send(reply, "{\"canceled\": true, \"path\": null}");
+    }
+}
+
 app_command_fn lookup_command(const char *name) 
 {
     uint32_t hash = fnv1a_32(name);
@@ -68,19 +93,21 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_win_toggle_max;
         case HASH_WIN_CLOSE:
             return (app_command_fn)handle_win_close;
-    }
-
-    // User commands (search 64-slot cmd_table)
-    uint32_t idx = hash & (CMD_TABLE_SIZE - 1);
-
-    for (int i = 0; i < CMD_TABLE_SIZE; i++) 
-    {
-        uint32_t slot = (idx + i) & (CMD_TABLE_SIZE - 1);
-        if (cmd_table[slot].handler == NULL) 
+        case HASH_DIALOG_OPEN_FILE:
+            return (app_command_fn)handle_dialog_open_file;
+        default:
+            // User commands (search 64-slot cmd_table)
+            uint32_t idx = hash & (CMD_TABLE_SIZE - 1);
+        
+            for (int i = 0; i < CMD_TABLE_SIZE; i++) 
+            {
+                uint32_t slot = (idx + i) & (CMD_TABLE_SIZE - 1);
+                if (cmd_table[slot].handler == NULL) 
+                    return NULL;
+        
+                if (cmd_table[slot].hash == hash && strcmp(cmd_table[slot].name, name) == 0)
+                    return cmd_table[slot].handler;
+            }
             return NULL;
-
-        if (cmd_table[slot].hash == hash && strcmp(cmd_table[slot].name, name) == 0)
-            return cmd_table[slot].handler;
     }
-    return NULL;
 }

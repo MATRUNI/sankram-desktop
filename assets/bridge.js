@@ -18,6 +18,9 @@ window.vyom = {
     toggleMaximize: () => window.vyom.invoke("vyom:window:toggle_maximize"),
     close: () => window.vyom.invoke("vyom:window:close"),
   },
+  dialog:{
+    openFile: (options = {}) => window.vyom.invoke("vyom:dialog:open_file", options),
+  },
   
   // JavaScript -> C (Commands)
   invoke: function (cmd, args = {}) 

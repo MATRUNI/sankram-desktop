@@ -13,6 +13,7 @@
   const counterMetric = document.getElementById("counter-metric");
 
   const btnBenchmark = document.getElementById("btn-benchmark");
+  const btnOpenFile = document.getElementById("btn-open-file");
   const btnAlert = document.getElementById("btn-alert");
   const streamOut = document.getElementById("stream-out");
   const streamStatus = document.getElementById("stream-status");
@@ -96,7 +97,44 @@
     });
   }
 
-  // 4. Pulse C Event
+  // 4. Native File Dialog
+  if (btnOpenFile) {
+    btnOpenFile.addEventListener("click", async () => {
+      streamStatus.textContent = "DIALOG OPEN";
+      streamStatus.style.color = "var(--starlight-cyan)";
+      streamOut.textContent = "// Invoking native OS file chooser dialog...\n";
+
+      try {
+        const res = window.vyom?.dialog?.openFile
+          ? await window.vyom.dialog.openFile()
+          : JSON.parse(await invoke("vyom:dialog:open_file"));
+
+        const parsed = typeof res === "string" ? JSON.parse(res) : res;
+
+        if (parsed && !parsed.canceled && parsed.path) {
+          streamStatus.textContent = "SELECTED";
+          streamStatus.style.color = "var(--aurora-emerald)";
+          streamOut.textContent = `// [NATIVE DIALOG // FILE SELECTED]\n` +
+                                  `// Path:   ${parsed.path}\n` +
+                                  `// Status: 200 OK (User confirmed file selection)`;
+          showToast("FILE SELECTED", parsed.path);
+        } else {
+          streamStatus.textContent = "CANCELLED";
+          streamStatus.style.color = "var(--starlight-dim)";
+          streamOut.textContent = `// [NATIVE DIALOG // CANCELLED]\n` +
+                                  `// Path:   null\n` +
+                                  `// Status: User dismissed dialog`;
+          showToast("DIALOG DISMISSED", "No file selected");
+        }
+      } catch (err) {
+        streamStatus.textContent = "FAULT";
+        streamStatus.style.color = "var(--danger-crimson)";
+        streamOut.textContent = `// Dialog Fault: ${err.message || err}`;
+      }
+    });
+  }
+
+  // 5. Pulse C Event
   if (btnAlert) {
     btnAlert.addEventListener("click", async () => {
       streamStatus.textContent = "DISPATCHING";

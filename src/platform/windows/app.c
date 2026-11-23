@@ -1,5 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <commdlg.h>
 #include "webview2_lite.h"
 #include "app.h"
 #include "bridge.h"
@@ -404,4 +406,42 @@ void platform_window_toggle_maximize(void)
 void platform_window_close(void) 
 {
     if (g_hwnd) PostMessageW(g_hwnd, WM_CLOSE, 0, 0);
+}
+
+char* platform_dialog_open_file(const char *title, const char *filter)
+{
+    (void) filter;
+    wchar_t file_path[MAX_PATH] = {0};
+    OPENFILENAMEW ofn = {0};
+    ofn.lStructSize = sizeof(OPENFILENAMEW);
+    ofn.hwndOwner = g_hwnd;               // Parent window (makes it modal)
+    ofn.lpstrFile = file_path;            // Buffer that receives the selected path
+    ofn.nMaxFile = MAX_PATH;
+    ofn.lpstrFilter = L"All Files (*.*)\0*.*\0Text Files (*.txt)\0*.txt\0";
+    ofn.nFilterIndex = 1;
+    ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+    wchar_t title_w[128] = {0};
+    if (title && *title) {
+        MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, 127);
+        ofn.lpstrTitle = title_w;
+    }
+    if (GetOpenFileNameW(&ofn)) 
+    {
+        // 1. Calculate how many bytes we need in UTF-8
+        int len = WideCharToMultiByte(CP_UTF8, 0, file_path, -1, NULL, 0, NULL, NULL);
+        if (len <= 0) return NULL;
+
+        // 2. Allocate the buffer (caller will free this)
+        char *utf8_path = (char *)malloc(len);
+        if (!utf8_path) return NULL;
+
+        // 3. Convert UTF-16 -> UTF-8
+        WideCharToMultiByte(CP_UTF8, 0, file_path, -1, utf8_path, len, NULL, NULL);
+        return utf8_path;
+    }
+    else
+    {
+        // User clicked Cancel or closed the dialog
+        return NULL;
+    }
 }
