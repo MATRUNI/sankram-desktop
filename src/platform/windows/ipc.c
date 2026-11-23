@@ -10,7 +10,7 @@ struct ipc_reply {
 };
 
 static HRESULT STDMETHODCALLTYPE dummy_QueryInterface(void *This, REFIID riid, void **ppv) {
-    (void)This; (void)riid; *ppv = NULL; return E_NOINTERFACE;
+    (void)This; (void)riid; *ppv = This; return S_OK;
 }
 
 static ULONG STDMETHODCALLTYPE dummy_AddRef(void *This) { 

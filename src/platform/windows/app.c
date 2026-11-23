@@ -3,18 +3,70 @@
 #include "webview2_lite.h"
 #include "app.h"
 #include "bridge.h"
+
+typedef HRESULT (STDMETHODCALLTYPE *CreateWebViewEnvironmentWithOptionsInternalFn)(
+    BOOLEAN unknown1,
+    int runtime_type,
+    PCWSTR user_data_dir,
+    IUnknown *options,
+    ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler *handler
+);
+
+static HMODULE find_and_load_webview2_runtime(void)
+{
+    const wchar_t *subkeys[] = {
+        L"Software\\Microsoft\\EdgeUpdate\\ClientState\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+        L"Software\\WOW6432Node\\Microsoft\\EdgeUpdate\\ClientState\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+        L"Software\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+        L"Software\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+    };
+    HKEY roots[] = { HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER };
+
+    wchar_t runtime_dir[MAX_PATH];
+
+    for (size_t r = 0; r < 2; r++) {
+        for (size_t s = 0; s < sizeof(subkeys)/sizeof(subkeys[0]); s++) {
+            HKEY hKey;
+            if (RegOpenKeyExW(roots[r], subkeys[s], 0, KEY_READ | KEY_WOW64_32KEY, &hKey) == ERROR_SUCCESS) {
+                DWORD size = sizeof(runtime_dir);
+                if (RegQueryValueExW(hKey, L"EBWebView", NULL, NULL, (LPBYTE)runtime_dir, &size) == ERROR_SUCCESS ||
+                    RegQueryValueExW(hKey, L"location", NULL, NULL, (LPBYTE)runtime_dir, &size) == ERROR_SUCCESS) {
+                    RegCloseKey(hKey);
+
+                    wchar_t dll_path[MAX_PATH];
+                    wcsncpy(dll_path, runtime_dir, MAX_PATH - 1);
+#if defined(_WIN64) || defined(__x86_64__)
+                    wcsncat(dll_path, L"\\EBWebView\\x64\\EmbeddedBrowserWebView.dll", MAX_PATH - wcslen(dll_path) - 1);
+#else
+                    wcsncat(dll_path, L"\\EBWebView\\x86\\EmbeddedBrowserWebView.dll", MAX_PATH - wcslen(dll_path) - 1);
+#endif
+                    // LOAD_WITH_ALTERED_SEARCH_PATH ensures neighboring runtime DLLs resolve correctly
+                    HMODULE hMod = LoadLibraryExW(dll_path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+                    if (hMod) return hMod;
+                } else {
+                    RegCloseKey(hKey);
+                }
+            }
+        }
+    }
+    return NULL;
+}
+
 static ICoreWebView2Controller *g_controller = NULL;
 static ICoreWebView2 *g_webview    = NULL;
 static HWND g_hwnd = NULL;
 static const app_config_t *g_config = NULL;
+
 static HRESULT STDMETHODCALLTYPE dummy_QueryInterface(void *This, REFIID riid, void **ppv) {
     (void)This; (void)riid;
-    *ppv = NULL;
-    return E_NOINTERFACE;
+    *ppv = This;
+    return S_OK;
 }
+
 static ULONG STDMETHODCALLTYPE dummy_AddRef(void *This) { 
     (void)This; return 1; 
 }
+
 static ULONG STDMETHODCALLTYPE dummy_Release(void *This) { 
     (void)This; return 1; 
 }
@@ -88,6 +140,7 @@ static ICoreWebView2NavigationStartingEventHandlerVtbl NavStartingHandlerVtbl = 
     .Release        = (void*)dummy_Release,
     .Invoke         = OnNavigationStarting
 };
+
 static ICoreWebView2NavigationStartingEventHandler NavStartingHandler = {
     .lpVtbl = &NavStartingHandlerVtbl
 };
@@ -162,6 +215,7 @@ static ICoreWebView2CreateCoreWebView2ControllerCompletedHandlerVtbl ControllerH
     .Release = (void *) dummy_Release,
     .Invoke = OnControllerCreated
 };
+
 static ICoreWebView2CreateCoreWebView2ControllerCompletedHandler ControllerHandler = {
     .lpVtbl = &ControllerHandlerVtbl
 };
@@ -181,6 +235,7 @@ static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandlerVtbl EnvHandler
     .Release        = (void*)dummy_Release,
     .Invoke         = OnEnvironmentCreated
 };
+
 static ICoreWebView2CreateCoreWebView2EnvironmentCompletedHandler EnvHandler = {
     .lpVtbl = &EnvHandlerVtbl
 };
@@ -225,7 +280,6 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
     }
     return DefWindowProcW(hwnd, uMsg, wParam, lParam);
 }
-
 
 int platform_app_run(const app_config_t *config, int argc, char *argv[]) 
 {
@@ -291,13 +345,15 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
     // 4. INITIALIZE WEBVIEW2 (Asynchronous COM Environment Creation)
     // Loads WebView2Loader.dll and starts the Chromium controller pipeline.
     // -------------------------------------------------------------------------
-    HMODULE hLoader = LoadLibraryW(L"WebView2Loader.dll");
-    if (hLoader) 
+    // NEW (Zero External DLLs!):
+    HMODULE hRuntime = find_and_load_webview2_runtime();
+    if (hRuntime) 
     {
-        CreateCoreWebView2EnvironmentWithOptionsFn create_env = (CreateCoreWebView2EnvironmentWithOptionsFn)(void *)GetProcAddress(hLoader, "CreateCoreWebView2EnvironmentWithOptions");
+        CreateWebViewEnvironmentWithOptionsInternalFn create_env = 
+            (CreateWebViewEnvironmentWithOptionsInternalFn)(void *)GetProcAddress(hRuntime, "CreateWebViewEnvironmentWithOptionsInternal");
         if (create_env) 
         {
-            create_env(NULL, NULL, NULL, &EnvHandler);
+            create_env(TRUE, 0, NULL, NULL, &EnvHandler);
         }
     }
 

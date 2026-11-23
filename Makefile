@@ -12,8 +12,7 @@ ifeq ($(OS), Windows_NT)
     PKG_CFLAGS :=
     PKG_LIBS := -luser32 -lgdi32 -lole32 -lshlwapi
     MKDIR = mkdir -p $(1)
-    RM = rm -rf $(1)
-    COPY_DEPS = @cp -f lib/WebView2Loader.dll $(BUILD_DIR)/ 2>/dev/null || true
+    RM = rm -rf $(1) 
     RUN_EMBED = ./$(BUILD_DIR)/embed$(EXE)
     RUN_TARGET = ./$(TARGET)
 else
@@ -24,13 +23,11 @@ else
         PKGS := webkitgtk-6.0 gtk4
         PKG_CFLAGS := $(shell pkg-config --cflags $(PKGS))
         PKG_LIBS := $(shell pkg-config --libs $(PKGS))
-        COPY_DEPS :=
     else ifeq ($(UNAME_S), Darwin)
         PLATFORM := macos
         EXE :=
         PKG_CFLAGS :=
         PKG_LIBS := -framework Cocoa -framework WebKit
-        COPY_DEPS :=
     endif
     MKDIR = mkdir -p $(1)
     RM = rm -rf $(1)
@@ -52,7 +49,7 @@ SRCS := $(COMMON_SRCS) $(PLATFORM_SRCS)
 OBJS := $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(filter %.c, $(SRCS))) \
         $(patsubst $(SRC_DIR)/%.m, $(BUILD_DIR)/%.o, $(filter %.m, $(SRCS)))
 
-.PHONY: all run debug clean
+.PHONY: all run debug release clean
 
 all: $(TARGET)
 
@@ -66,8 +63,7 @@ $(BUILD_DIR)/bridge.h: assets/bridge.js $(EMBED_BIN) | $(BUILD_DIR)
 
 $(TARGET): $(OBJS) | $(BUILD_DIR)
 	@echo   [LD]    $@
-	@$(CC) $(OBJS) $(PKG_LIBS) -o $@
-	$(COPY_DEPS)
+	@$(CC) $(CFLAGS) $(OBJS) $(PKG_LIBS) -o $@
 
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/bridge.h | $(BUILD_DIR)
 	@$(call MKDIR,$(dir $@))
@@ -85,6 +81,10 @@ run: $(TARGET)
 # Debug build with symbols (-g) and no optimizations (-O0)
 debug: CFLAGS := $(DEBUG_CFLAGS)
 debug: clean $(TARGET)
+
+# Release build: strips all debug symbols and optimizes for minimal size
+release: CFLAGS += -s -Os
+release: clean $(TARGET)
 
 clean:
 	@echo   [CLEAN] Removing $(BUILD_DIR)/
