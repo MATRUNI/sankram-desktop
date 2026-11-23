@@ -3,46 +3,131 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>About - Vyom</title>
+  <title>Architecture - Vyom</title>
   <link rel="stylesheet" href="/style.css" />
+  <style>
+    .spec-matrix {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+      margin-top: 0.5rem;
+    }
+    .spec-matrix tr {
+      border-bottom: 1px solid var(--hairline);
+    }
+    .spec-matrix tr:last-child {
+      border-bottom: none;
+    }
+    .spec-matrix td {
+      padding: 0.85rem 0.5rem;
+    }
+    .spec-label {
+      color: var(--starlight-dim);
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.08em;
+      width: 32%;
+    }
+    .spec-data {
+      color: var(--starlight);
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+    .spec-hl {
+      color: var(--starlight-cyan);
+    }
+  </style>
 </head>
 <body>
-  <div class="glow-bg"></div>
-
-  <div class="dashboard" style="max-width: 750px;">
-    <header class="header">
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        <span class="status-text">CROSS-PLATFORM ARCHITECTURE</span>
+  <!-- Native Frameless Titlebar -->
+  <header class="titlebar">
+    <div class="titlebar-drag">
+      <div class="brand">
+        <svg class="brand-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="9" stroke-width="1.5" opacity="0.4" />
+          <path d="M12 4 L12 20 M4 12 L20 12" stroke-width="1.2" opacity="0.3" />
+          <path d="M7 8 L12 17 L17 8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+        <span class="brand-name">VYOM</span>
+        <span class="brand-divider">/</span>
+        <span class="brand-spec">ARCHITECTURE</span>
       </div>
-      <h1 class="title">About Vyom</h1>
-      <p class="subtitle">Minimalist, zero-framework native desktop runtime</p>
-    </header>
+    </div>
+    <div class="titlebar-controls">
+      <button class="win-btn" id="win-min" title="Minimize" aria-label="Minimize">
+        <svg viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="1.2" /></svg>
+      </button>
+      <button class="win-btn" id="win-max" title="Maximize" aria-label="Maximize">
+        <svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.2" /></svg>
+      </button>
+      <button class="win-btn win-close" id="win-close" title="Close" aria-label="Close">
+        <svg viewBox="0 0 10 10"><path d="M2,2 L8,8 M8,2 L2,8" stroke="currentColor" stroke-width="1.2" /></svg>
+      </button>
+    </div>
+  </header>
 
-    <div class="panel" style="margin-bottom: 2rem;">
-      <div class="panel-header">
-        <div class="panel-icon">🏛️</div>
-        <div>
-          <h3>System Architecture</h3>
-          <p>Native OS bindings with zero third-party framework overhead</p>
-        </div>
+  <!-- Cosmic Background Layer -->
+  <div class="void-background">
+    <div class="celestial-eclipse"></div>
+    <div class="stars-canvas"></div>
+    <div class="devanagari-watermark">व्योम</div>
+  </div>
+
+  <main class="viewport" style="max-width: 700px;">
+    <section class="hero-stage" style="padding-top: 0.5rem; gap: 0.6rem;">
+      <div class="pre-label">SYSTEM SPECIFICATION</div>
+      <h1 class="core-title" style="font-size: 2.2rem;">ARCHITECTURE</h1>
+      <p class="core-tagline">Native OS webview runtime engineering specifications.</p>
+    </section>
+
+    <div class="instrument-strip">
+      <div class="strip-header">
+        <span class="strip-title">CORE MATRIX</span>
+        <span class="strip-status">VERIFIED</span>
       </div>
 
-      <ul class="feature-list">
-        <li><strong>Windows Backend:</strong> Win32 + Chromium Edge (WebView2 COM)</li>
-        <li><strong>Linux Backend:</strong> GTK 4 + WebKitGTK 6.0</li>
-        <li><strong>IPC Dispatcher:</strong> Compile-time FNV-1a Hash Table ($O(1)$ dispatch)</li>
-        <li><strong>Asset Protocol:</strong> Virtual Host & Scheme Mapping &bull; Zero local HTTP servers</li>
-        <li><strong>Binary Footprint:</strong> ~50 KB native C executable</li>
-      </ul>
+      <table class="spec-matrix">
+        <tbody>
+          <tr>
+            <td class="spec-label">WINDOWS SUBSYSTEM</td>
+            <td class="spec-data">Win32 API + Microsoft Edge WebView2 COM (EmbeddedBrowserWebView)</td>
+          </tr>
+          <tr>
+            <td class="spec-label">LINUX SUBSYSTEM</td>
+            <td class="spec-data">GTK 4 + WebKitGTK 6.0 Direct Bindings</td>
+          </tr>
+          <tr>
+            <td class="spec-label">IPC DISPATCHER</td>
+            <td class="spec-data">Zero-copy FNV-1a Integer Hash Router &bull; <span class="spec-hl">O(1) Zero String Compare</span></td>
+          </tr>
+          <tr>
+            <td class="spec-label">VIRTUAL SCHEME</td>
+            <td class="spec-data"><span class="spec-hl">https://app.localhost/</span> &bull; Virtual Host Mapping (Zero HTTP Ports)</td>
+          </tr>
+          <tr>
+            <td class="spec-label">SPA ROUTING</td>
+            <td class="spec-data">C-Level Navigation Interceptor &bull; Auto-Rewrites 404s to HTML5 History</td>
+          </tr>
+          <tr>
+            <td class="spec-label">BINARY SIZE</td>
+            <td class="spec-data" style="color: var(--aurora-emerald); font-weight: 700;">24 KB Standalone Native PE / ELF Executable</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
-    <footer class="footer">
-      <a href="/index.html" class="nav-button">
-        <span class="arrow">&larr;</span>
-        <span>Back to Mission Control</span>
+    <div style="text-align: center; margin-top: 0.5rem;">
+      <a href="/index.html" class="strip-btn strip-link" style="padding: 0.75rem 1.6rem; display: inline-flex;">
+        <span>&larr; Return to Telemetry Stage</span>
       </a>
-    </footer>
-  </div>
+    </div>
+  </main>
+
+  <script>
+    document.getElementById("win-min")?.addEventListener("click", () => window.vyom?.window?.minimize?.());
+    document.getElementById("win-max")?.addEventListener("click", () => window.vyom?.window?.toggleMaximize?.());
+    document.getElementById("win-close")?.addEventListener("click", () => window.vyom?.window?.close?.() || window.close());
+  </script>
 </body>
 </html>

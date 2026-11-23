@@ -7,99 +7,140 @@
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <div class="glow-bg"></div>
-
-  <div class="dashboard">
-    <!-- Header -->
-    <header class="header">
-      <div class="status-badge">
-        <span class="status-dot"></span>
-        <span class="status-text">C &bull; WEB ENGINE LINKED</span>
-      </div>
-      <h1 class="title">Vyom</h1>
-      <p class="subtitle">Ultra-lightweight native cross-platform runtime written in pure C</p>
-    </header>
-
-    <!-- Top KPI Grid -->
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-label">PLATFORM BACKEND</span>
-        <div class="stat-value" id="val-os">Loading...</div>
-        <span class="stat-sub" id="val-arch">Architecture: Unknown</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">IPC ROUNDTRIP LATENCY</span>
-        <div class="stat-value" id="val-latency">-- ms</div>
-        <span class="stat-sub">Direct FNV-1a Memory Dispatch</span>
-      </div>
-      <div class="stat-card">
-        <span class="stat-label">PUSH EVENT STREAM</span>
-        <div class="stat-value" id="val-events-count">0 received</div>
-        <span class="stat-sub">Asynchronous C &rarr; JS Emitter</span>
+  <!-- Native Frameless Titlebar -->
+  <header class="titlebar">
+    <div class="titlebar-drag">
+      <div class="brand">
+        <svg class="brand-glyph" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+          <circle cx="12" cy="12" r="9" stroke-width="1.5" opacity="0.4" />
+          <path d="M12 4 L12 20 M4 12 L20 12" stroke-width="1.2" opacity="0.3" />
+          <path d="M7 8 L12 17 L17 8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="12" cy="12" r="2" fill="currentColor" />
+        </svg>
+        <span class="brand-name">VYOM</span>
+        <span class="brand-divider">/</span>
+        <span class="brand-spec">CORE 24KB</span>
       </div>
     </div>
-
-    <!-- Main Workspace Grid -->
-    <div class="main-grid">
-      <!-- Card 1: Interactive Command Dispatcher -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-icon">⚡</div>
-          <div>
-            <h3>Bidirectional IPC Dispatcher</h3>
-            <p>Invoke native C functions via zero-overhead message passing</p>
-          </div>
-        </div>
-
-        <div class="button-group">
-          <button id="btn-sysinfo" class="btn btn-primary">
-            <span>Query System Info</span>
-          </button>
-          <button id="btn-ping" class="btn btn-secondary">
-            <span>Benchmark Latency</span>
-          </button>
-        </div>
-
-        <div class="console-box">
-          <div class="console-header">
-            <span>RESPONSE STREAM</span>
-            <span class="console-status" id="ipc-status">READY</span>
-          </div>
-          <pre id="sysinfo-out">// Click a button above to communicate with C kernel</pre>
-        </div>
-      </div>
-
-      <!-- Card 2: Live Push Event Receiver -->
-      <div class="panel">
-        <div class="panel-header">
-          <div class="panel-icon">📡</div>
-          <div>
-            <h3>Real-Time Event Feed</h3>
-            <p>Events dispatched asynchronously by background C threads</p>
-          </div>
-        </div>
-
-        <button id="btn-alert" class="btn btn-accent">
-          <span>Emit C Event (server_alert)</span>
-        </button>
-
-        <div class="event-feed-container">
-          <div class="feed-header">LIVE EVENT LOG</div>
-          <div id="event-feed" class="feed-list">
-            <div class="feed-placeholder">Waiting for native C events...</div>
-          </div>
-        </div>
-      </div>
+    <div class="titlebar-controls">
+      <button class="win-btn" id="win-min" title="Minimize" aria-label="Minimize">
+        <svg viewBox="0 0 10 10"><line x1="1" y1="5" x2="9" y2="5" stroke="currentColor" stroke-width="1.2" /></svg>
+      </button>
+      <button class="win-btn" id="win-max" title="Maximize" aria-label="Maximize">
+        <svg viewBox="0 0 10 10"><rect x="1.5" y="1.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1.2" /></svg>
+      </button>
+      <button class="win-btn win-close" id="win-close" title="Close" aria-label="Close">
+        <svg viewBox="0 0 10 10"><path d="M2,2 L8,8 M8,2 L2,8" stroke="currentColor" stroke-width="1.2" /></svg>
+      </button>
     </div>
+  </header>
 
-    <!-- Footer -->
-    <footer class="footer">
-      <a href="/about.html" class="nav-button">
-        <span>Architecture & Platform Specs</span>
-        <span class="arrow">&rarr;</span>
-      </a>
-    </footer>
+  <!-- Cosmic Background Layer -->
+  <div class="void-background">
+    <div class="celestial-eclipse"></div>
+    <div class="stars-canvas"></div>
+    <div class="devanagari-watermark">व्योम</div>
   </div>
+
+  <main class="viewport">
+    <!-- Center Hero Section -->
+    <section class="hero-stage">
+      <div class="orbital-emblem">
+        <div class="orbital-glow"></div>
+        <svg class="orbital-svg" viewBox="0 0 120 120" fill="none">
+          <!-- Orbital rings -->
+          <circle class="ring-outer" cx="60" cy="60" r="54" stroke="currentColor" stroke-width="1" stroke-dasharray="4 8" opacity="0.35" />
+          <circle class="ring-inner" cx="60" cy="60" r="42" stroke="currentColor" stroke-width="1.2" opacity="0.6" />
+          <circle cx="60" cy="60" r="28" stroke="currentColor" stroke-width="1" stroke-opacity="0.2" />
+          <!-- Chevron V / Celestial Apex -->
+          <path class="apex-mark" d="M44 48 L60 76 L76 48" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+          <circle class="core-singularity" cx="60" cy="60" r="3" fill="#ffffff" />
+        </svg>
+      </div>
+
+      <div class="title-block">
+        <div class="pre-label">
+          <span class="live-dot"></span>
+          <span>BARE-METAL C RUNTIME</span>
+        </div>
+        <h1 class="core-title">VYOM</h1>
+        <p class="core-tagline">The weightless desktop engine. Zero bundled browser, infinite canvas.</p>
+      </div>
+
+      <!-- Precision Telemetry Counter Capsule (The Vite Flex) -->
+      <div class="telemetry-capsule-wrapper">
+        <button id="counter-btn" class="telemetry-capsule">
+          <div class="capsule-left">
+            <span class="pulse-indicator"></span>
+            <span id="counter-text" class="counter-val">count is 0</span>
+          </div>
+          <div class="capsule-sep"></div>
+          <div class="capsule-right">
+            <span class="metric-label">IPC</span>
+            <span id="counter-metric" class="metric-val">0.00 ms</span>
+          </div>
+        </button>
+        <span class="capsule-hint">Click capsule to pulse C core and benchmark zero-copy IPC</span>
+      </div>
+    </section>
+
+    <!-- 3-Pillar Telemetry Grid -->
+    <section class="telemetry-grid">
+      <div class="telemetry-card">
+        <span class="card-id">SPEC // 01</span>
+        <h3 class="card-heading">24 KB Core</h3>
+        <p class="card-body">Zero bundled Chromium or Node.js. Pure native Win32 & WebKitGTK bindings.</p>
+      </div>
+
+      <div class="telemetry-card">
+        <span class="card-id">SPEC // 02</span>
+        <h3 class="card-heading">Sub-Millisecond IPC</h3>
+        <p class="card-body">Zero-copy compile-time FNV-1a hash routing with $O(1)$ zero string comparisons.</p>
+      </div>
+
+      <div class="telemetry-card">
+        <span class="card-id">SPEC // 03</span>
+        <h3 class="card-heading">Drop-In Registry</h3>
+        <p class="card-body">Drop any <code>.c</code> module into <code>src/commands/</code> — automatically discovered and bound.</p>
+      </div>
+    </section>
+
+    <!-- Precision Control Strip -->
+    <section class="instrument-strip">
+      <div class="strip-header">
+        <span class="strip-title">NATIVE TELEMETRY CONSOLE</span>
+        <span class="strip-status" id="stream-status">STANDBY</span>
+      </div>
+      <div class="strip-actions">
+        <button id="btn-benchmark" class="strip-btn">
+          <span>Run 10x Latency Cycle</span>
+        </button>
+        <button id="btn-alert" class="strip-btn">
+          <span>Pulse C Event</span>
+        </button>
+        <a href="/about.html" class="strip-btn strip-link">
+          <span>System Architecture &rarr;</span>
+        </a>
+      </div>
+      <pre class="telemetry-console" id="stream-out">// Telemetry ready. Invoke command to capture live performance metrics.</pre>
+    </section>
+
+    <!-- Aerospace Telemetry Footer -->
+    <footer class="telemetry-footer">
+      <div class="footer-data">
+        <span>ARCH: <strong id="spec-arch">x86_64</strong></span>
+        <span class="dot-sep">&bull;</span>
+        <span>OS: <strong id="spec-os">DETECTING...</strong></span>
+        <span class="dot-sep">&bull;</span>
+        <span>FOOTPRINT: <strong>24 KB</strong></span>
+        <span class="dot-sep">&bull;</span>
+        <span>PROTOCOL: <strong>app.localhost</strong></span>
+      </div>
+    </footer>
+  </main>
+
+  <!-- Minimalist Toast Strip -->
+  <div id="toast-dock" class="toast-dock"></div>
 
   <script src="/script.js"></script>
 </body>
