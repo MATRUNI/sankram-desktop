@@ -85,5 +85,47 @@ window.vyom = {
         console.error("[bridge] Error in event listener:", err);
       }
     }
-  }
+  },
+
+  // File system commands
+  fs: {
+    // 1. Get file metadata
+    fileInfo: async (path) => {
+      const res = await window.vyom.invoke("vyom:fs:file_info", { path });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+
+    // 2. Read chunk: splits header on line 1, hands you raw data!
+    readChunk: async (path, offset = 0, length = 65536) => {
+      const raw = await window.vyom.invoke("vyom:fs:read_chunk", { path, offset, length });
+      const idx = raw.indexOf("\n");
+      if (idx === -1) {
+        return { offset, length: 0, total: 0, eof: true, data: "" };
+      }
+
+      const header = raw.slice(0, idx);
+      const data = raw.slice(idx + 1);
+
+      // Parse "offset=0,len=65536,total=1048576,eof=0"
+      const meta = {};
+      for (const pair of header.split(",")) {
+        const [k, v] = pair.split("=");
+        meta[k] = Number(v);
+      }
+
+      return {
+        offset: meta.offset,
+        length: meta.len,
+        total: meta.total,
+        eof: meta.eof === 1,
+        data: data, // 100% pure raw unescaped text!
+      };
+    },
+
+    // 3. Write text
+    writeTextFile: async (path, content, append = false) => {
+      const res = await window.vyom.invoke("vyom:fs:write_text", { path, content, append });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+  },
 };

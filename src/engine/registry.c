@@ -1,6 +1,7 @@
 #include "hash.h"
 #include "registry.h"
 #include "platform.h"
+#include "fs.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -11,6 +12,9 @@
 #define HASH_DIALOG_OPEN_FILE  0xadfa146fu  // fnv1a_32("vyom:dialog:open_file")
 #define HASH_DIALOG_SAVE_FILE  0x7f7e3624u  // fnv1a_32("vyom:dialog:save_file")
 #define HASH_WIN_START_DRAG  0x34e32b9fu // fnv1a_32("vyom:window:start_drag")
+#define HASH_FS_FILE_INFO   0x1be18f64u // fnv1a_32("vyom:fs:file_info")
+#define HASH_FS_READ_CHUNK  0x2e9676efu // fnv1a_32("vyom:fs:read_chunk")
+#define HASH_FS_WRITE_TEXT  0x4072a17eu // fnv1a_32("vyom:fs:write_text")
 
 typedef struct {
     char name[32];
@@ -131,6 +135,12 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_win_start_drag;
         case HASH_DIALOG_SAVE_FILE:
             return (app_command_fn)handle_dialog_save_file;
+        case HASH_FS_FILE_INFO:
+            return (app_command_fn)handle_fs_file_info;
+        case HASH_FS_READ_CHUNK:
+            return (app_command_fn)handle_fs_read_chunk;
+        case HASH_FS_WRITE_TEXT:
+            return (app_command_fn)handle_fs_write_text;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);
