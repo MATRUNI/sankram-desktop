@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
         .min_width = 600,
         .min_height = 400,
         .resizable = true,
-        .decorations = true
+        .decorations = false
     };
 
     webview_config_t web_cfg = {

@@ -8,6 +8,7 @@
 #include "ipc.h"
 
 static GtkWidget *g_active_webview = NULL;
+static GtkWidget *g_active_window = NULL;
 
 static void on_uri_scheme_request(WebKitURISchemeRequest *request, gpointer user_data) 
 {
@@ -55,6 +56,7 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     // 1. GTK4 WINDOW INITIALIZATION (Title & Dimensions)
     // -------------------------------------------------------------------------
     GtkWidget *window = gtk_application_window_new(app);
+    g_active_window = window;
     gtk_window_set_title(GTK_WINDOW(window), con->window->title);
     gtk_window_set_default_size(GTK_WINDOW(window), con->window->width, con->window->height);
     
@@ -71,6 +73,8 @@ static void activate_callback(GtkApplication *app,gpointer user_data)
     webkit_settings_set_disable_web_security(settings, con->webview->disable_web_security);
     if (con->webview->developer_extras)
     {
+        // console: Open console by default
+        webkit_settings_set_enable_developer_extras(settings, con->webview->developer_extras);
         // developer_extras: Show WebKit Web Inspector
         WebKitWebInspector *inspector = webkit_web_view_get_inspector(WEBKIT_WEB_VIEW(webview));
         webkit_web_inspector_show(inspector);
@@ -178,4 +182,25 @@ void platform_app_emit(const char *event, const char *json_data)
     char *script = g_strdup_printf("window.vyom._emit(\"%s\", %s);", event, payload);
     webkit_web_view_evaluate_javascript( WEBKIT_WEB_VIEW(g_active_webview),script,-1,NULL, NULL, NULL, NULL, NULL);
     g_free(script);
+}
+
+void platform_window_minimize(void) 
+{
+    if (g_active_window) gtk_window_minimize(GTK_WINDOW(g_active_window));
+}
+
+void platform_window_toggle_maximize(void) 
+{
+    if (!g_active_window) return;
+    GtkWindow *win = GTK_WINDOW(g_active_window);
+    if (gtk_window_is_maximized(win)) {
+        gtk_window_unmaximize(win);
+    } else {
+        gtk_window_maximize(win);
+    }
+}
+
+void platform_window_close(void) 
+{
+    if (g_active_window) gtk_window_close(GTK_WINDOW(g_active_window));
 }

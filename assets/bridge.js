@@ -13,6 +13,12 @@ window.vyom = {
   _reqId: 0,
   _listeners: new Map(),
 
+  window:{
+    minimize: () => window.vyom.invoke("vyom:window:minimize"),
+    toggleMaximize: () => window.vyom.invoke("vyom:window:toggle_maximize"),
+    close: () => window.vyom.invoke("vyom:window:close"),
+  },
+  
   // JavaScript -> C (Commands)
   invoke: function (cmd, args = {}) 
   {

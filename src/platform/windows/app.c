@@ -332,3 +332,20 @@ void platform_app_emit(const char *event, const char *json_data)
     MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);
     g_webview->lpVtbl->ExecuteScript(g_webview, script_w, NULL);
 }
+
+void platform_window_minimize(void) 
+{
+    if (g_hwnd) ShowWindow(g_hwnd, SW_MINIMIZE);
+}
+
+void platform_window_toggle_maximize(void) 
+{
+    if (!g_hwnd) return;
+    if (IsZoomed(g_hwnd)) ShowWindow(g_hwnd, SW_RESTORE);
+    else ShowWindow(g_hwnd, SW_MAXIMIZE);
+}
+
+void platform_window_close(void) 
+{
+    if (g_hwnd) PostMessageW(g_hwnd, WM_CLOSE, 0, 0);
+}
