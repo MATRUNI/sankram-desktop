@@ -10,6 +10,7 @@
 #define HASH_WIN_CLOSE       0x0590e82cu  // fnv1a_32("vyom:window:close")
 #define HASH_DIALOG_OPEN_FILE  0xadfa146fu  // fnv1a_32("vyom:dialog:open_file")
 #define HASH_DIALOG_SAVE_FILE  0x7f7e3624u  // fnv1a_32("vyom:dialog:save_file")
+#define HASH_WIN_START_DRAG  0x34e32b9fu // fnv1a_32("vyom:window:start_drag")
 
 typedef struct {
     char name[32];
@@ -59,6 +60,13 @@ static void handle_win_close(const char *args, ipc_reply_t *reply)
     ipc_reply_send(reply, "{\"success\": true}");
 }
 
+static void handle_win_start_drag(const char *args, ipc_reply_t *reply) 
+{
+    (void)args;
+    platform_window_start_drag();
+    ipc_reply_send(reply, "{\"success\": true}");
+}
+
 static void handle_dialog_open_file(const char *args, ipc_reply_t *reply)
 {
     (void)args;
@@ -95,6 +103,8 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_win_close;
         case HASH_DIALOG_OPEN_FILE:
             return (app_command_fn)handle_dialog_open_file;
+        case HASH_WIN_START_DRAG:
+            return (app_command_fn)handle_win_start_drag;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);

@@ -20,7 +20,16 @@
   const specOs = document.getElementById("spec-os");
   const specArch = document.getElementById("spec-arch");
   const toastDock = document.getElementById("toast-dock");
+  const titlebar = document.querySelector(".titlebar");
 
+  if (titlebar) {
+    titlebar.addEventListener("mousedown", (e) => {
+      // Only drag on Left Mouse Click, and ignore clicks on buttons!
+      if (e.button === 0 && e.target.tagName !== "BUTTON") {
+        window.vyom.window.startDrag();
+      }
+    });
+  }
   // Helper: Invocation
   async function invoke(cmd, payload = {}) {
     if (window.vyom && typeof window.vyom.invoke === "function") {

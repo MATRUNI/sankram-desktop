@@ -17,6 +17,7 @@ window.vyom = {
     minimize: () => window.vyom.invoke("vyom:window:minimize"),
     toggleMaximize: () => window.vyom.invoke("vyom:window:toggle_maximize"),
     close: () => window.vyom.invoke("vyom:window:close"),
+    startDrag: () => window.vyom.invoke("vyom:window:start_drag"),
   },
   dialog:{
     openFile: (options = {}) => window.vyom.invoke("vyom:dialog:open_file", options),

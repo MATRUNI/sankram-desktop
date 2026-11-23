@@ -204,3 +204,80 @@ void platform_window_close(void)
 {
     if (g_active_window) gtk_window_close(GTK_WINDOW(g_active_window));
 }
+
+void platform_window_start_drag(void) 
+{
+    if (!g_active_window) return;
+    GtkNative *native = GTK_NATIVE(g_active_window);
+    GdkSurface *surface = gtk_native_get_surface(native);
+
+    if (surface && GDK_IS_TOPLEVEL(surface)) 
+    {
+        GdkToplevel *toplevel = GDK_TOPLEVEL(surface);
+        GdkDisplay *display = gtk_widget_get_display(GTK_WIDGET(g_active_window));
+        GdkSeat *seat = gdk_display_get_default_seat(display);
+        GdkDevice *device = gdk_seat_get_pointer(seat);
+
+        // Tell Wayland / X11 window manager to begin interactive mouse dragging
+        gdk_toplevel_begin_move(toplevel, device, 1, 0, 0, GDK_CURRENT_TIME);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// 4. NATIVE DIALOGS (GTK4 Modern FileDialog)
+// -----------------------------------------------------------------------------
+typedef struct {
+    gboolean done;
+    char *selected_path;
+} dialog_state_t;
+
+static void on_open_finish(GObject *source, GAsyncResult *result, gpointer user_data) 
+{
+    dialog_state_t *state = (dialog_state_t *)user_data;
+    GtkFileDialog *dialog = GTK_FILE_DIALOG(source);
+    GError *error = NULL;
+    GFile *file = gtk_file_dialog_open_finish(dialog, result, &error);
+    if (file) 
+    {
+        char *path = g_file_get_path(file);
+        if (path) 
+        {
+            state->selected_path = g_strdup(path);
+            g_free(path);
+        }
+        g_object_unref(file);
+    }
+    if (error) 
+    {
+        g_error_free(error);
+    }
+    state->done = TRUE;
+}
+
+char* platform_dialog_open_file(const char *title, const char *filter) 
+{
+    (void)filter;
+    GtkWindow *parent = g_active_window ? GTK_WINDOW(g_active_window) : NULL;
+
+    GtkFileDialog *dialog = gtk_file_dialog_new();
+    if (title && *title)
+        gtk_file_dialog_set_title(dialog, title);
+
+    dialog_state_t state = { .done = FALSE, .selected_path = NULL };
+    gtk_file_dialog_open(dialog, parent, NULL, on_open_finish, &state);
+
+    // Pump GLib events while waiting so the UI doesn't freeze
+    while (!state.done) 
+    {
+        g_main_context_iteration(NULL, TRUE);
+    }
+
+    g_object_unref(dialog);
+    return state.selected_path;
+}
+
+char* platform_dialog_save_file(const char *title, const char *filter, const char *default_name) 
+{
+    (void)title; (void)filter; (void)default_name;
+    return NULL;
+}

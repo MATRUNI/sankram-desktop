@@ -408,6 +408,13 @@ void platform_window_close(void)
     if (g_hwnd) PostMessageW(g_hwnd, WM_CLOSE, 0, 0);
 }
 
+void platform_window_start_drag(void) 
+{
+    if (!g_hwnd) return;
+    ReleaseCapture();
+    SendMessageW(g_hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+}
+
 char* platform_dialog_open_file(const char *title, const char *filter)
 {
     (void) filter;

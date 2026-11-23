@@ -14,6 +14,7 @@ void platform_app_emit(const char *event, const char *json_data);
 void platform_window_minimize(void);
 void platform_window_toggle_maximize(void);
 void platform_window_close(void);
+void platform_window_start_drag(void);
 
 // 4. Native Dialogs: returns dynamically allocated UTF-8 path string, or NULL if cancelled
 char* platform_dialog_open_file(const char *title, const char *filter);
