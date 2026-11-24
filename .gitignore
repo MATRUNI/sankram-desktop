@@ -1,11 +1,15 @@
-# Build outputs
+# Build outputs (C engine & sandbox)
 build/
 bin/
 *.o
 *.out
 *.txt
+sandbox/
 
-logs
+# Frontend dependencies (npm)
+frontend/node_modules/
+node_modules/
+*.log
 
 # Editor & OS files
 .vscode/
