@@ -15,6 +15,7 @@
 #include <dirent.h>
 
 #if defined(_WIN32)
+  #include <direct.h>
   #define vyom_stat _stat64
   #define vyom_stat_struct struct _stat64
   #define vyom_fseek _fseeki64
@@ -248,4 +249,54 @@ void handle_fs_read_dir(const char *args, ipc_reply_t *reply)
     json[len] = '\0';
 
     ipc_reply_send(reply, json);
+}
+
+// The single DRY helper: handles path extraction & reply
+static void handle_path_op(const char *args, ipc_reply_t *reply, const char *err_msg, int (*op)(const char *)) 
+{
+    char path[1024];
+    if (!json_get_string(args, "path", path, sizeof(path))) {
+        ipc_reply_error(reply, "Missing 'path' argument");
+        return;
+    }
+
+    if (op(path) == 0) {
+        ipc_reply_send(reply, "{\"success\": true}");
+    } else {
+        ipc_reply_error(reply, err_msg);
+    }
+}
+
+static int op_create_file(const char *path) {
+    FILE *fp = fopen(path, "ab");
+    if (!fp) return -1;
+    fclose(fp);
+    return 0;
+}
+
+static int op_create_dir(const char *path) 
+{
+    #if defined(_WIN32)
+        return _mkdir(path);
+    #else
+        return mkdir(path, 0755);
+    #endif
+}
+
+// 5. Create empty file (works for any extension, like Linux touch)
+void handle_fs_create_file(const char *args, ipc_reply_t *reply) 
+{
+    handle_path_op(args, reply, "Failed to create file", op_create_file);
+}
+
+// 6. Create directory
+void handle_fs_create_dir(const char *args, ipc_reply_t *reply) 
+{
+    handle_path_op(args, reply, "Failed to create directory", op_create_dir);
+}
+
+// 7. Remove file or empty directory
+void handle_fs_remove(const char *args, ipc_reply_t *reply) 
+{
+    handle_path_op(args, reply, "Failed to remove path", remove);
 }

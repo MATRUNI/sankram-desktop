@@ -10,4 +10,10 @@ void handle_fs_write_text(const char *args, ipc_reply_t *reply);
 
 void handle_fs_read_dir(const char *args, ipc_reply_t *reply);
 
+void handle_fs_create_file(const char *args, ipc_reply_t *reply);
+
+void handle_fs_create_dir(const char *args, ipc_reply_t *reply);
+
+void handle_fs_remove(const char *args, ipc_reply_t *reply);
+
 #endif

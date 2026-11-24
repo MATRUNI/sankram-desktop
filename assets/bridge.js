@@ -128,11 +128,29 @@ window.vyom = {
       return typeof res === "string" ? JSON.parse(res) : res;
     },
 
-      // 4. List directory contents (with optional pagination)
+    // 4. List directory contents (with optional pagination)
     readDir: async (path, options = {}) => {
       const offset = options.offset || 0;
       const limit = options.limit || 500;
       const res = await window.vyom.invoke("vyom:fs:read_dir", { path, offset, limit });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+
+    // 5. Create empty file (with any extension)
+    createFile: async (path) => {
+      const res = await window.vyom.invoke("vyom:fs:create_file", { path });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+
+    // 6. Create directory
+    createDir: async (path) => {
+      const res = await window.vyom.invoke("vyom:fs:create_dir", { path });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+
+    // 7. Remove file or empty directory
+    remove: async (path) => {
+      const res = await window.vyom.invoke("vyom:fs:remove", { path });
       return typeof res === "string" ? JSON.parse(res) : res;
     },
   },
