@@ -6,6 +6,7 @@ function parseInline(text) {
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
+    .replace(/\$O\(1\)\$/g, "O(1)")
     .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.*?)\*/g, "<em>$1</em>")
     .replace(/`([^`]+)`/g, '<code class="md-inline-code">$1</code>')
@@ -13,6 +14,9 @@ function parseInline(text) {
 }
 
 function renderMarkdown(md) {
+  // Normalize Windows CRLF (\r\n) and legacy CR (\r) to standard LF (\n)
+  md = (md || "").replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+
   const codeBlocks = [];
   md = md.replace(/```([a-z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
     const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
@@ -47,7 +51,7 @@ function renderMarkdown(md) {
       continue;
     }
 
-    if (/^#{1,4}\s+/.test(line)) {
+    if (/^#{1,6}\s+/.test(line)) {
       if (inList) { html.push("</ul>"); inList = false; }
       if (inTable) { html.push("</tbody></table></div>"); inTable = false; }
       const level = line.match(/^#+/)[0].length;

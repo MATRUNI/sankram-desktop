@@ -157,8 +157,8 @@ static HRESULT STDMETHODCALLTYPE OnControllerCreated(ICoreWebView2CreateCoreWebV
 
     controller->lpVtbl->get_CoreWebView2(controller, &g_webview);
     windows_ipc_init(g_webview);
-    wchar_t bridge_w[4096];
-    MultiByteToWideChar(CP_UTF8, 0, bridge_js, -1, bridge_w, 4096);
+    wchar_t bridge_w[32768];
+    MultiByteToWideChar(CP_UTF8, 0, bridge_js, -1, bridge_w, 32768);
     g_webview->lpVtbl->AddScriptToExecuteOnDocumentCreated(g_webview, bridge_w, NULL);
     g_webview->lpVtbl->AddRef(g_webview);
     // -------------------------------------------------------------------------

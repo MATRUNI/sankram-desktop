@@ -74,21 +74,51 @@ static void windows_ipc_handle_message(ICoreWebView2 *sender, const char *json)
 
 void ipc_reply_send(ipc_reply_t *reply, const char *json_response) 
 {
-    char script[4096];
-    snprintf(script, sizeof(script), "window.vyom._emit('__reply_%d', { result: %s });", reply->id, json_response);
+    static char script[140000];
+    static wchar_t script_w[140000];
 
-    wchar_t script_w[4096];
-    MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);
+    // 1. If JSON object or array (readdir, file_info, etc.), pass directly:
+    if (json_response[0] == '{' || json_response[0] == '[') 
+    {
+        snprintf(script, sizeof(script), "window.vyom._emit('__reply_%d', { result: %s });", reply->id, json_response);
+    } 
+    // 2. If raw text (readchunk header\ndata): wrap in a valid quoted JS string
+    else 
+    {
+        int prefix_len = snprintf(script, sizeof(script), "window.vyom._emit('__reply_%d', { result: \"", reply->id);
+        char *dst = script + prefix_len;
+        char *limit = script + sizeof(script) - 10;
+        const char *src = json_response;
+
+        while (*src && dst < limit) 
+        {
+            if (*src == '"')       { *dst++ = '\\'; *dst++ = '"'; }
+            else if (*src == '\\') { *dst++ = '\\'; *dst++ = '\\'; }
+            else if (*src == '\n') { *dst++ = '\\'; *dst++ = 'n'; }
+            else if (*src == '\r') { *dst++ = '\\'; *dst++ = 'r'; }
+            else if (*src == '\t') { *dst++ = '\\'; *dst++ = 't'; }
+            else                   { *dst++ = *src; }
+            src++;
+        }
+        *dst++ = '"';
+        *dst++ = ' ';
+        *dst++ = '}';
+        *dst++ = ')';
+        *dst++ = ';';
+        *dst = '\0';
+    }
+
+    MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, sizeof(script_w) / sizeof(script_w[0]));
     reply->webview->lpVtbl->ExecuteScript(reply->webview, script_w, NULL);
 }
 
 void ipc_reply_error(ipc_reply_t *reply, const char *error_message) 
 {
-    char script[4096];
+    char script[70000];
     snprintf(script, sizeof(script), "window.vyom._emit('__reply_%d', { error: '%s' });", reply->id, error_message);
 
-    wchar_t script_w[4096];
-    MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, 4096);
+    wchar_t script_w[70000];
+    MultiByteToWideChar(CP_UTF8, 0, script, -1, script_w, sizeof(script_w) / sizeof(script_w[0]));
     reply->webview->lpVtbl->ExecuteScript(reply->webview, script_w, NULL);
 }
 
