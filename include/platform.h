@@ -21,4 +21,13 @@ char* platform_dialog_open_file(const char *title, const char *filter);
 
 char* platform_dialog_save_file(const char *title, const char *filter, const char *default_name);
 
+// 5. Native Clipboard
+void  platform_clipboard_write_text(const char *text);
+
+char* platform_clipboard_read_text(void);
+
+void  platform_clipboard_clear(void);
+
+bool  platform_clipboard_has_text(void);
+
 #endif

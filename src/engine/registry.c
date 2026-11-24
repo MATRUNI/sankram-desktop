@@ -2,6 +2,7 @@
 #include "registry.h"
 #include "platform.h"
 #include "fs.h"
+#include "clipboard.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,6 +22,10 @@
 #define HASH_FS_REMOVE      0x65be3301u // fnv1a_32("vyom:fs:remove")
 #define HASH_FS_RENAME      0x38433f4fu // fnv1a_32("vyom:fs:rename")
 #define HASH_FS_MOVE        0x21633630u // fnv1a_32("vyom:fs:move")
+#define HASH_CLIPBOARD_WRITE_TEXT 0x2ed254f1u // fnv1a_32("vyom:clipboard:write_text")
+#define HASH_CLIPBOARD_READ_TEXT  0x2f011754u // fnv1a_32("vyom:clipboard:read_text")
+#define HASH_CLIPBOARD_CLEAR      0xc3c8b877u // fnv1a_32("vyom:clipboard:clear")
+#define HASH_CLIPBOARD_HAS_TEXT   0x67a726ccu // fnv1a_32("vyom:clipboard:has_text")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -157,6 +162,14 @@ app_command_fn lookup_command(const char *name)
         case HASH_FS_RENAME:
         case HASH_FS_MOVE:
             return (app_command_fn)handle_fs_rename;
+        case HASH_CLIPBOARD_WRITE_TEXT:
+            return (app_command_fn)handle_clipboard_write;
+        case HASH_CLIPBOARD_READ_TEXT:
+            return (app_command_fn)handle_clipboard_read;
+        case HASH_CLIPBOARD_CLEAR:
+            return (app_command_fn)handle_clipboard_clear;
+        case HASH_CLIPBOARD_HAS_TEXT:
+            return (app_command_fn)handle_clipboard_has_text;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);

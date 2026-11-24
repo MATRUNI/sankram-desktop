@@ -13,7 +13,7 @@ This document tracks all completed milestones and outlines the comprehensive roa
 [ Draggable Frameless Window System  ]    85% [=================---] (Min, Max, Close, Drag)
 [ 64-Bit Chunked Filesystem Engine   ]   100% [====================] (Info, Chunk, Write, ReadDir, Touch, Rm, Rename, Move)
 [ Native Dialogs                     ]    70% [==============------] (OpenFile, SaveFile)
-[ Native Clipboard Engine            ]     0% [--------------------] (Next Up)
+[ Native Clipboard Engine            ]   100% [====================] (writeText, readText, clear, hasText)
 [ Native Notifications (Tray/Banners)]     0% [--------------------] (Planned)
 [ Process & Shell Execution          ]     0% [--------------------] (Planned)
 [ System Tray & Context Menus        ]     0% [--------------------] (Planned)
@@ -52,14 +52,14 @@ This document tracks all completed milestones and outlines the comprehensive roa
 ## Phase 2: Essential Desktop Capabilities (High Priority 🚀)
 
 ### 2.1 Native Clipboard Engine (`window.vyom.clipboard`)
-- [ ] **`clipboard.writeText(text)`**: Copy UTF-8 string to clipboard without browser permission prompts.
+- [x] **`clipboard.writeText(text)`**: Copy UTF-8 string to clipboard without browser permission prompts.
   - **Win32**: `OpenClipboard`, `EmptyClipboard`, `SetClipboardData(CF_UNICODETEXT, ...)`.
   - **Linux**: `gdk_clipboard_set_text` via GDK4.
-- [ ] **`clipboard.readText()`**: Read plain text from system clipboard.
+- [x] **`clipboard.readText()`**: Read plain text from system clipboard.
   - **Win32**: `GetClipboardData(CF_UNICODETEXT)` with `WideCharToMultiByte`.
   - **Linux**: `gdk_clipboard_read_text_async`.
-- [ ] **`clipboard.clear()`**: Wipe system clipboard contents.
-- [ ] **`clipboard.hasText()`**: Fast boolean check without retrieving full payload.
+- [x] **`clipboard.clear()`**: Wipe system clipboard contents.
+- [x] **`clipboard.hasText()`**: Fast boolean check without retrieving full payload.
 
 ### 2.2 Native Message & Confirmation Dialogs (`window.vyom.dialog`)
 - [ ] **`dialog.openDirectory({ title })`**: Pick a directory folder.

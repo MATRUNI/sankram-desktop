@@ -23,6 +23,19 @@ window.vyom = {
     openFile: (options = {}) => window.vyom.invoke("vyom:dialog:open_file", options),
     saveFile: (options = {}) => window.vyom.invoke("vyom:dialog:save_file", options),
   },
+
+  clipboard: {
+    writeText: (text) => window.vyom.invoke("vyom:clipboard:write_text", { text: String(text) }),
+    readText: async () => {
+      const res = await window.vyom.invoke("vyom:clipboard:read_text");
+      return typeof res === "string" ? res : (res?.text ?? "");
+    },
+    clear: () => window.vyom.invoke("vyom:clipboard:clear"),
+    hasText: async () => {
+      const res = await window.vyom.invoke("vyom:clipboard:has_text");
+      return typeof res === "boolean" ? res : Boolean(res?.hasText);
+    },
+  },
   
   // JavaScript -> C (Commands)
   invoke: function (cmd, args = {}) 
