@@ -16,4 +16,6 @@ void handle_fs_create_dir(const char *args, ipc_reply_t *reply);
 
 void handle_fs_remove(const char *args, ipc_reply_t *reply);
 
+void handle_fs_rename(const char *args, ipc_reply_t *reply);
+
 #endif

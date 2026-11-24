@@ -19,6 +19,8 @@
 #define HASH_FS_CREATE_FILE 0x4bb172bcu // fnv1a_32("vyom:fs:create_file")
 #define HASH_FS_CREATE_DIR  0xb8820841u // fnv1a_32("vyom:fs:create_dir")
 #define HASH_FS_REMOVE      0x65be3301u // fnv1a_32("vyom:fs:remove")
+#define HASH_FS_RENAME      0x38433f4fu // fnv1a_32("vyom:fs:rename")
+#define HASH_FS_MOVE        0x21633630u // fnv1a_32("vyom:fs:move")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -152,6 +154,9 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_fs_create_dir;
         case HASH_FS_REMOVE:
             return (app_command_fn)handle_fs_remove;
+        case HASH_FS_RENAME:
+        case HASH_FS_MOVE:
+            return (app_command_fn)handle_fs_rename;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);

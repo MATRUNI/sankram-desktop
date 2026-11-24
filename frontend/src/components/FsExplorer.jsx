@@ -110,6 +110,23 @@ export default function FsExplorer() {
     }
   };
 
+  // Rename / Move item
+  const handleRename = async (name) => {
+    const newName = window.prompt(`Rename or move "${name}" to:`, name);
+    const trimmed = (newName || "").trim().replace(/^\/+/, "");
+    if (!trimmed || trimmed === name) return;
+    const oldPath = `${SANDBOX_DIR}/${name}`;
+    const newPath = `${SANDBOX_DIR}/${trimmed}`;
+    try {
+      await window.vyom?.fs?.rename?.(oldPath, newPath);
+      setStatusMessage(`Renamed: ${name} -> ${trimmed}`);
+      if (selectedFile === name) setSelectedFile(trimmed);
+      loadDirectory();
+    } catch (err) {
+      setStatusMessage(`Rename failed: ${err.message || err}`);
+    }
+  };
+
   // View file contents via chunk reader
   const handleViewFile = async (name) => {
     const targetPath = `${SANDBOX_DIR}/${name}`;
@@ -186,16 +203,29 @@ export default function FsExplorer() {
                     <span className="fs-item-name">{item.name}</span>
                     <span className="fs-item-size">{item.isDir ? "DIR" : `${item.size} B`}</span>
                   </div>
-                  <button
-                    className="fs-del-btn"
-                    title="Delete item from sandbox"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRemove(item.name);
-                    }}
-                  >
-                    ✕
-                  </button>
+                  <div style={{ display: "flex", gap: "0.25rem" }}>
+                    <button
+                      className="fs-del-btn"
+                      style={{ color: "var(--nebula-lavender)" }}
+                      title="Rename or move item"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRename(item.name);
+                      }}
+                    >
+                      ✎
+                    </button>
+                    <button
+                      className="fs-del-btn"
+                      title="Delete item from sandbox"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemove(item.name);
+                      }}
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
               ))
             )}

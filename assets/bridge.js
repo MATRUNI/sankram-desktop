@@ -153,5 +153,17 @@ window.vyom = {
       const res = await window.vyom.invoke("vyom:fs:remove", { path });
       return typeof res === "string" ? JSON.parse(res) : res;
     },
+
+    // 8. Rename / Move file or directory
+    rename: async (from, to) => {
+      const res = await window.vyom.invoke("vyom:fs:rename", { from, to });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+
+    // 9. Move alias (identical to rename)
+    move: async (from, to) => {
+      const res = await window.vyom.invoke("vyom:fs:move", { from, to });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
   },
 };

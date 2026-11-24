@@ -15,6 +15,7 @@
 #include <dirent.h>
 
 #if defined(_WIN32)
+  #include <windows.h>
   #include <direct.h>
   #define vyom_stat _stat64
   #define vyom_stat_struct struct _stat64
@@ -299,4 +300,36 @@ void handle_fs_create_dir(const char *args, ipc_reply_t *reply)
 void handle_fs_remove(const char *args, ipc_reply_t *reply) 
 {
     handle_path_op(args, reply, "Failed to remove path", remove);
+}
+
+// 8. Rename / Move File or Directory
+void handle_fs_rename(const char *args, ipc_reply_t *reply) 
+{
+    char from[1024];
+    char to[1024];
+    if (!json_get_string(args, "from", from, sizeof(from))) 
+    {
+        ipc_reply_error(reply, "Missing 'from' argument");
+        return;
+    }
+
+    if (!json_get_string(args, "to", to, sizeof(to)))
+    {
+        ipc_reply_error(reply, "Missing 'to' argument");
+        return;
+    }
+
+#if defined(_WIN32)
+    // MoveFileExA with MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED
+    // safely handles replacing existing target and cross-drive volume moves
+    if (MoveFileExA(from, to, MOVEFILE_REPLACE_EXISTING | MOVEFILE_COPY_ALLOWED)) 
+        ipc_reply_send(reply, "{\"success\": true}"); 
+    else 
+        ipc_reply_error(reply, "Failed to rename or move path");
+#else
+    if (rename(from, to) == 0) 
+        ipc_reply_send(reply, "{\"success\": true}");
+    else 
+        ipc_reply_error(reply, "Failed to rename or move path");
+#endif
 }
