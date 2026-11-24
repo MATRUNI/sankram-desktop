@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <sys/stat.h>
+#include <dirent.h>
 
 #if defined(_WIN32)
   #define vyom_stat _stat64
@@ -163,5 +164,88 @@ void handle_fs_write_text(const char *args, ipc_reply_t *reply)
 
     char json[128];
     snprintf(json, sizeof(json), "{\"success\": true, \"bytesWritten\": %llu}", (unsigned long long)written);
+    ipc_reply_send(reply, json);
+}
+
+// 4. Read Directory Contents
+void handle_fs_read_dir(const char *args, ipc_reply_t *reply) 
+{
+    char path[1024];
+    if (!json_get_string(args, "path", path, sizeof(path))) 
+    {
+        ipc_reply_error(reply, "Missing 'path' argument");
+        return;
+    }
+
+    uint64_t offset = json_get_uint64(args, "offset", 0);
+    uint64_t limit  = json_get_uint64(args, "limit", 500);
+    if (limit == 0 || limit > 500) limit = 500; // 500 items comfortably fit in 64KB
+
+    DIR *d = opendir(path);
+    if (!d) 
+    {
+        ipc_reply_error(reply, "Failed to open directory");
+        return;
+    }
+
+    char json[65536];
+    size_t len = 0;
+    json[len++] = '[';
+
+    uint64_t skipped = 0;
+    uint64_t count = 0;
+    bool first = true;
+    struct dirent *entry;
+
+    while ((entry = readdir(d)) != NULL) 
+    {
+        // Skip current (.) and parent (..) directory entries
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) 
+            continue;
+
+        // Paging: skip the first 'offset' valid entries
+        if (skipped < offset) 
+        {
+            skipped++;
+            continue;
+        }
+
+        // Paging: reached requested page limit
+        if (count >= limit) 
+            break;
+
+        // Bounds safety: reserve 512 bytes for this entry + closing ']'
+        if (len + 512 >= sizeof(json)) 
+            break;
+
+        // Build full path to stat the entry
+        char full_path[2048];
+        snprintf(full_path, sizeof(full_path), "%s/%s", path, entry->d_name);
+
+        vyom_stat_struct st;
+        bool is_dir = false;
+        uint64_t size = 0;
+
+        if (vyom_stat(full_path, &st) == 0) 
+        {
+            is_dir = S_ISDIR(st.st_mode);
+            size = (uint64_t)st.st_size;
+        }
+
+        len += snprintf(json + len, sizeof(json) - len,
+                        "%s{\"name\":\"%s\",\"isDir\":%s,\"size\":%" PRIu64 "}",
+                        first ? "" : ",",
+                        entry->d_name,
+                        is_dir ? "true" : "false",
+                        size);
+        first = false;
+        count++;
+    }
+
+    closedir(d);
+
+    json[len++] = ']';
+    json[len] = '\0';
+
     ipc_reply_send(reply, json);
 }

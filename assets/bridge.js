@@ -127,5 +127,13 @@ window.vyom = {
       const res = await window.vyom.invoke("vyom:fs:write_text", { path, content, append });
       return typeof res === "string" ? JSON.parse(res) : res;
     },
+
+      // 4. List directory contents (with optional pagination)
+    readDir: async (path, options = {}) => {
+      const offset = options.offset || 0;
+      const limit = options.limit || 500;
+      const res = await window.vyom.invoke("vyom:fs:read_dir", { path, offset, limit });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
   },
 };
