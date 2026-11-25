@@ -12,12 +12,12 @@ This document tracks all completed milestones and outlines the comprehensive roa
 [ Core IPC & O(1) Wyhash Switchboard  ]   100% [====================] (Complete)
 [ Draggable Frameless Window System  ]    85% [=================---] (Min, Max, Close, Drag)
 [ 64-Bit Chunked Filesystem Engine   ]   100% [====================] (Info, Chunk, Write, ReadDir, Touch, Rm, Rename, Move)
-[ Native Dialogs                     ]    70% [==============------] (OpenFile, SaveFile)
+[ Native Dialogs                     ]   100% [====================] (OpenFile, SaveFile, OpenDirectory, Message, Confirm)
 [ Native Clipboard Engine            ]   100% [====================] (writeText, readText, clear, hasText)
+[ macOS (Cocoa + WKWebView)          ]   100% [====================] (Complete & CI Verified)
 [ Native Notifications (Tray/Banners)]     0% [--------------------] (Planned)
 [ Process & Shell Execution          ]     0% [--------------------] (Planned)
 [ System Tray & Context Menus        ]     0% [--------------------] (Planned)
-[ macOS (Cocoa + WKWebView)          ]     0% [--------------------] (Future)
 ```
 
 ---
@@ -62,13 +62,18 @@ This document tracks all completed milestones and outlines the comprehensive roa
 - [x] **`clipboard.hasText()`**: Fast boolean check without retrieving full payload.
 
 ### 2.2 Native Message & Confirmation Dialogs (`window.vyom.dialog`)
-- [ ] **`dialog.openDirectory({ title })`**: Pick a directory folder.
+- [x] **`dialog.openDirectory({ title })`**: Pick a directory folder.
   - **Win32**: `IFileDialog` with `FOS_PICKFOLDERS` or `SHBrowseForFolder`.
   - **Linux**: `gtk_file_dialog_select_folder`.
-- [ ] **`dialog.message({ title, message, type })`**: Native alert popups (`info`, `warning`, `error`).
+  - **macOS**: `NSOpenPanel` with `canChooseDirectories = YES`.
+- [x] **`dialog.message({ title, message, type })`**: Native alert popups (`info`, `warning`, `error`).
   - **Win32**: `MessageBoxW`.
   - **Linux**: `GtkAlertDialog`.
-- [ ] **`dialog.confirm({ title, message, buttons })`**: Native prompt returning selected button (OK/Cancel, Yes/No).
+  - **macOS**: `NSAlert`.
+- [x] **`dialog.confirm({ title, message, buttons })`**: Native prompt returning selected button (OK/Cancel, Yes/No).
+  - **Win32**: `MessageBoxW` with `MB_OKCANCEL`.
+  - **Linux**: `GtkAlertDialog` choose.
+  - **macOS**: `NSAlert` with OK/Cancel.
 
 ### 2.3 Window Customization & Geometry (`window.vyom.window`)
 - [ ] **`window.setSize(width, height)` / `window.getSize()`**: Dynamic runtime resize.
@@ -154,11 +159,13 @@ This document tracks all completed milestones and outlines the comprehensive roa
 
 ---
 
-## Phase 6: Cross-Platform Expansion (macOS 🍏)
+## Phase 6: Cross-Platform Expansion (macOS 🍏 & Android 🤖)
 
-- [ ] Implement `src/platform/macos/app.m` using Cocoa (`NSApplication`, `NSWindow`) + `WKWebView`.
-- [ ] Implement `src/platform/macos/ipc.m` via `WKScriptMessageHandlerWithReply`.
-- [ ] Wire macOS target flags and framework links in `Makefile` (`-framework Cocoa -framework WebKit`).
+- [x] Implement `src/platform/macos/app.m` using Cocoa (`NSApplication`, `NSWindow`) + `WKWebView`.
+- [x] Implement `src/platform/macos/ipc.m` via `WKScriptMessageHandlerWithReply`.
+- [x] Wire macOS target flags and framework links in `Makefile` (`-framework Cocoa -framework WebKit`).
+- [x] Apple Silicon (ARM64) CI verification on GitHub Actions (`macos-latest`).
+- [ ] Implement `src/platform/android/` NDK JNI bridge (`libvyom.so`) & AssetLoader.
 
 ---
 
