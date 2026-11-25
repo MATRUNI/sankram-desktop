@@ -8,7 +8,7 @@ const char *get_memi_type(const char *path)
     if(path==NULL) goto return_default;
     const char *dot = strrchr(path,'.');
     if(dot==NULL || dot[1]=='\0') goto return_default;
-    uint32_t hash = fnv1a_32(dot+1);
+    uint32_t hash = wyhash32(dot+1);
     switch (hash)
     {
         case HASH_HTML: 

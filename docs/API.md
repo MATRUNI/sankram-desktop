@@ -23,12 +23,12 @@
 +-----------------------------------------------------------------+
                                |   ^
                     32-bit     |   |  ipc_reply_send(reply, ...)
-                    FNV-1a     |   |
+                    Wyhash     |   |
                                v   |
 +-----------------------------------------------------------------+
 |                  CORE ENGINE REGISTRY (C11)                     |
 |                                                                 |
-|   switch (fnv1a_32(cmd)) {                                      |
+|   switch (wyhash32(cmd)) {                                      |
 |       case HASH_FS_READ_CHUNK:  handle_fs_read_chunk(...);      |
 |       case HASH_FS_READ_DIR:    handle_fs_read_dir(...);        |
 |       default: search user cmd_table[...]                       |
@@ -50,7 +50,7 @@
    - On Windows: Dispatched via `window.chrome.webview.postMessage({ id, cmd, args })`.
 
 2. **$O(1)$ Hash-Based Command Routing**:
-   - Instead of expensive string comparisons (`strcmp`), Vyom hashes command strings at compile-time using the **32-bit FNV-1a** algorithm.
+   - Instead of expensive string comparisons (`strcmp`), Vyom hashes command strings at compile-time using the **32-bit Wyhash** algorithm.
    - The engine switchboard executes a single CPU register integer check in **1 clock cycle**.
 
 3. **C to JavaScript (`ipc_reply_send` & `platform_app_emit`)**:
@@ -61,21 +61,27 @@
 
 ## 2. Master Command Dispatch Table
 
-| JavaScript Invocation | Wire Command Name | FNV-1a Hash (32-bit) | C Handler | Source File |
+| JavaScript Invocation | Wire Command Name | Wyhash-32 (32-bit) | C Handler | Source File |
 | :--- | :--- | :--- | :--- | :--- |
-| `window.vyom.window.minimize()` | `vyom:window:minimize` | `0xf460cba8u` | `handle_win_minimize` | `src/engine/registry.c` |
-| `window.vyom.window.toggleMaximize()` | `vyom:window:toggle_maximize` | `0x17a84d23u` | `handle_win_toggle_max` | `src/engine/registry.c` |
-| `window.vyom.window.close()` | `vyom:window:close` | `0x0590e82cu` | `handle_win_close` | `src/engine/registry.c` |
-| `window.vyom.window.startDrag()` | `vyom:window:start_drag` | `0x34e32b9fu` | `handle_win_start_drag` | `src/engine/registry.c` |
-| `window.vyom.dialog.openFile(options)` | `vyom:dialog:open_file` | `0xadfa146fu` | `handle_dialog_open_file` | `src/engine/registry.c` |
-| `window.vyom.dialog.saveFile(options)` | `vyom:dialog:save_file` | `0x7f7e3624u` | `handle_dialog_save_file` | `src/engine/registry.c` |
-| `window.vyom.fs.fileInfo(path)` | `vyom:fs:file_info` | `0x1be18f64u` | `handle_fs_file_info` | `src/engine/fs.c` |
-| `window.vyom.fs.readChunk(path, off, len)` | `vyom:fs:read_chunk` | `0x2e9676efu` | `handle_fs_read_chunk` | `src/engine/fs.c` |
-| `window.vyom.fs.writeTextFile(path, txt, app)`| `vyom:fs:write_text` | `0x4072a17eu` | `handle_fs_write_text` | `src/engine/fs.c` |
-| `window.vyom.fs.readDir(path, options)` | `vyom:fs:read_dir` | `0x49e02d51u` | `handle_fs_read_dir` | `src/engine/fs.c` |
-| `window.vyom.fs.createFile(path)` | `vyom:fs:create_file` | `0x4bb172bcu` | `handle_fs_create_file` | `src/engine/fs.c` |
-| `window.vyom.fs.createDir(path)` | `vyom:fs:create_dir` | `0xb8820841u` | `handle_fs_create_dir` | `src/engine/fs.c` |
-| `window.vyom.fs.remove(path)` | `vyom:fs:remove` | `0x65be3301u` | `handle_fs_remove` | `src/engine/fs.c` |
+| `window.vyom.window.minimize()` | `vyom:window:minimize` | `0x0d48ed56u` | `handle_win_minimize` | `src/engine/registry.c` |
+| `window.vyom.window.toggleMaximize()` | `vyom:window:toggle_maximize` | `0xfe1b2c5bu` | `handle_win_toggle_max` | `src/engine/registry.c` |
+| `window.vyom.window.close()` | `vyom:window:close` | `0xafd91676u` | `handle_win_close` | `src/engine/registry.c` |
+| `window.vyom.window.startDrag()` | `vyom:window:start_drag` | `0x018bb464u` | `handle_win_start_drag` | `src/engine/registry.c` |
+| `window.vyom.dialog.openFile(options)` | `vyom:dialog:open_file` | `0x8f8202e3u` | `handle_dialog_open_file` | `src/engine/registry.c` |
+| `window.vyom.dialog.saveFile(options)` | `vyom:dialog:save_file` | `0x148805c7u` | `handle_dialog_save_file` | `src/engine/registry.c` |
+| `window.vyom.fs.fileInfo(path)` | `vyom:fs:file_info` | `0x2bfcb39bu` | `handle_fs_file_info` | `src/engine/fs.c` |
+| `window.vyom.fs.readChunk(path, off, len)` | `vyom:fs:read_chunk` | `0x79ea54d3u` | `handle_fs_read_chunk` | `src/engine/fs.c` |
+| `window.vyom.fs.writeTextFile(path, txt, app)`| `vyom:fs:write_text` | `0xb0e8eb90u` | `handle_fs_write_text` | `src/engine/fs.c` |
+| `window.vyom.fs.readDir(path, options)` | `vyom:fs:read_dir` | `0xd11449e8u` | `handle_fs_read_dir` | `src/engine/fs.c` |
+| `window.vyom.fs.createFile(path)` | `vyom:fs:create_file` | `0xe59c953fu` | `handle_fs_create_file` | `src/engine/fs.c` |
+| `window.vyom.fs.createDir(path)` | `vyom:fs:create_dir` | `0xedad688au` | `handle_fs_create_dir` | `src/engine/fs.c` |
+| `window.vyom.fs.remove(path)` | `vyom:fs:remove` | `0x1354a270u` | `handle_fs_remove` | `src/engine/fs.c` |
+| `window.vyom.fs.rename(oldPath, newPath)` | `vyom:fs:rename` | `0x9462544eu` | `handle_fs_rename` | `src/engine/fs.c` |
+| `window.vyom.fs.move(srcPath, dstPath)` | `vyom:fs:move` | `0xae3da64du` | `handle_fs_move` | `src/engine/fs.c` |
+| `window.vyom.clipboard.writeText(text)` | `vyom:clipboard:write_text` | `0xfd14bb60u` | `handle_clipboard_write` | `src/engine/clipboard.c` |
+| `window.vyom.clipboard.readText()` | `vyom:clipboard:read_text` | `0x989ead8eu` | `handle_clipboard_read` | `src/engine/clipboard.c` |
+| `window.vyom.clipboard.clear()` | `vyom:clipboard:clear` | `0x8eee9d42u` | `handle_clipboard_clear` | `src/engine/clipboard.c` |
+| `window.vyom.clipboard.hasText()` | `vyom:clipboard:has_text` | `0xe86a74f5u` | `handle_clipboard_has_text` | `src/engine/clipboard.c` |
 
 ---
 

@@ -151,7 +151,7 @@ export default function TelemetryHero() {
         <div className="telemetry-card">
           <span className="card-id">SPEC // 02</span>
           <h3 className="card-heading">Sub-Millisecond IPC</h3>
-          <p className="card-body">Zero-copy FNV-1a 32-bit register switchboard with 1-cycle O(1) integer routing.</p>
+          <p className="card-body">Zero-copy Wyhash 32-bit register switchboard with 1-cycle O(1) integer routing.</p>
         </div>
         <div className="telemetry-card">
           <span className="card-id">SPEC // 03</span>

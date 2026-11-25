@@ -7,25 +7,25 @@
 #include <string.h>
 #include <stdlib.h>
 
-#define HASH_WIN_MINIMIZE    0xf460cba8u  // fnv1a_32("vyom:window:minimize")
-#define HASH_WIN_TOGGLE_MAX  0x17a84d23u  // fnv1a_32("vyom:window:toggle_maximize")
-#define HASH_WIN_CLOSE       0x0590e82cu  // fnv1a_32("vyom:window:close")
-#define HASH_DIALOG_OPEN_FILE  0xadfa146fu  // fnv1a_32("vyom:dialog:open_file")
-#define HASH_DIALOG_SAVE_FILE  0x7f7e3624u  // fnv1a_32("vyom:dialog:save_file")
-#define HASH_WIN_START_DRAG  0x34e32b9fu // fnv1a_32("vyom:window:start_drag")
-#define HASH_FS_FILE_INFO   0x1be18f64u // fnv1a_32("vyom:fs:file_info")
-#define HASH_FS_READ_CHUNK  0x2e9676efu // fnv1a_32("vyom:fs:read_chunk")
-#define HASH_FS_WRITE_TEXT  0x4072a17eu // fnv1a_32("vyom:fs:write_text")
-#define HASH_FS_READ_DIR    0x49e02d51u // fnv1a_32("vyom:fs:read_dir")
-#define HASH_FS_CREATE_FILE 0x4bb172bcu // fnv1a_32("vyom:fs:create_file")
-#define HASH_FS_CREATE_DIR  0xb8820841u // fnv1a_32("vyom:fs:create_dir")
-#define HASH_FS_REMOVE      0x65be3301u // fnv1a_32("vyom:fs:remove")
-#define HASH_FS_RENAME      0x38433f4fu // fnv1a_32("vyom:fs:rename")
-#define HASH_FS_MOVE        0x21633630u // fnv1a_32("vyom:fs:move")
-#define HASH_CLIPBOARD_WRITE_TEXT 0x2ed254f1u // fnv1a_32("vyom:clipboard:write_text")
-#define HASH_CLIPBOARD_READ_TEXT  0x2f011754u // fnv1a_32("vyom:clipboard:read_text")
-#define HASH_CLIPBOARD_CLEAR      0xc3c8b877u // fnv1a_32("vyom:clipboard:clear")
-#define HASH_CLIPBOARD_HAS_TEXT   0x67a726ccu // fnv1a_32("vyom:clipboard:has_text")
+#define HASH_WIN_MINIMIZE          0x0d48ed56u // wyhash32("vyom:window:minimize")
+#define HASH_WIN_TOGGLE_MAX        0xfe1b2c5bu // wyhash32("vyom:window:toggle_maximize")
+#define HASH_WIN_CLOSE             0xafd91676u // wyhash32("vyom:window:close")
+#define HASH_WIN_START_DRAG        0x018bb464u // wyhash32("vyom:window:start_drag")
+#define HASH_DIALOG_OPEN_FILE      0x8f8202e3u // wyhash32("vyom:dialog:open_file")
+#define HASH_DIALOG_SAVE_FILE      0x148805c7u // wyhash32("vyom:dialog:save_file")
+#define HASH_FS_FILE_INFO          0x2bfcb39bu // wyhash32("vyom:fs:file_info")
+#define HASH_FS_READ_CHUNK         0x79ea54d3u // wyhash32("vyom:fs:read_chunk")
+#define HASH_FS_WRITE_TEXT         0xb0e8eb90u // wyhash32("vyom:fs:write_text")
+#define HASH_FS_READ_DIR           0xd11449e8u // wyhash32("vyom:fs:read_dir")
+#define HASH_FS_CREATE_FILE        0xe59c953fu // wyhash32("vyom:fs:create_file")
+#define HASH_FS_CREATE_DIR         0xedad688au // wyhash32("vyom:fs:create_dir")
+#define HASH_FS_REMOVE             0x1354a270u // wyhash32("vyom:fs:remove")
+#define HASH_FS_RENAME             0x9462544eu // wyhash32("vyom:fs:rename")
+#define HASH_FS_MOVE               0xae3da64du // wyhash32("vyom:fs:move")
+#define HASH_CLIPBOARD_WRITE_TEXT  0xfd14bb60u // wyhash32("vyom:clipboard:write_text")
+#define HASH_CLIPBOARD_READ_TEXT   0x989ead8eu // wyhash32("vyom:clipboard:read_text")
+#define HASH_CLIPBOARD_CLEAR       0x8eee9d42u // wyhash32("vyom:clipboard:clear")
+#define HASH_CLIPBOARD_HAS_TEXT    0xe86a74f5u // wyhash32("vyom:clipboard:has_text")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -36,7 +36,7 @@ static cmd_entry_t cmd_table[CMD_TABLE_SIZE];
 
 void app_bind_command(const char *name, app_command_fn handler) 
 {
-    uint32_t hash = fnv1a_32(name);
+    uint32_t hash = wyhash32(name);
     uint32_t idx = hash & (CMD_TABLE_SIZE - 1);
 
     for (int i = 0; i < CMD_TABLE_SIZE; i++)
@@ -129,7 +129,7 @@ static void handle_dialog_save_file(const char *args, ipc_reply_t *reply)
 
 app_command_fn lookup_command(const char *name) 
 {
-    uint32_t hash = fnv1a_32(name);
+    uint32_t hash = wyhash32(name);
     // 1. Fast CPU register integer check (Takes 1 CPU cycle, ZERO strcmp!)
     switch (hash) 
     {

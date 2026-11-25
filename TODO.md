@@ -9,7 +9,7 @@ This document tracks all completed milestones and outlines the comprehensive roa
 ## 🌟 Milestone Progress Matrix
 
 ```text
-[ Core IPC & O(1) FNV-1a Switchboard ]   100% [====================] (Complete)
+[ Core IPC & O(1) Wyhash Switchboard  ]   100% [====================] (Complete)
 [ Draggable Frameless Window System  ]    85% [=================---] (Min, Max, Close, Drag)
 [ 64-Bit Chunked Filesystem Engine   ]   100% [====================] (Info, Chunk, Write, ReadDir, Touch, Rm, Rename, Move)
 [ Native Dialogs                     ]    70% [==============------] (OpenFile, SaveFile)
@@ -25,7 +25,7 @@ This document tracks all completed milestones and outlines the comprehensive roa
 ## Phase 1: Core Foundation & Shipped Capabilities (Complete ✅)
 
 - [x] **Zero-Dependency C11 Runtime Core**: Standalone binary compiles to `< 30 KB` without bundled Node.js or Chromium.
-- [x] **O(1) Compile-Time FNV-1a Hash Router**: 32-bit register command routing in 1 CPU cycle with zero hot-path `strcmp`.
+- [x] **O(1) Compile-Time Wyhash32 Hash Router**: 32-bit register command routing in 1 CPU cycle with zero hot-path `strcmp` and robust avalanche properties.
 - [x] **Zero-Allocation JSON Parser**: Lightweight `json_get_string`, `json_get_uint64`, `json_get_bool` (`json_util.c`).
 - [x] **Linux Native Backend**: GTK4 + WebKitGTK 6.0 with `jsc_value_new_string` script replies and `app://localhost/` custom URI scheme.
 - [x] **Windows Native Backend**: Win32 + Microsoft WebView2 COM integration with custom virtual host mapping (`https://app.localhost`).
@@ -165,7 +165,7 @@ This document tracks all completed milestones and outlines the comprehensive roa
 ## 📐 Architecture Rules & Coding Standards
 
 1. **Zero Unnecessary Mallocs on Hot Paths**: Hot switchboards and IPC replies must use stack buffers or `.bss` static buffers wherever sizes are bounded.
-2. **Compile-Time FNV-1a Hashing**: Every new command must define an integer FNV-1a hash constant in `registry.c` for 1-cycle CPU dispatch.
+2. **Compile-Time Wyhash32 Hashing**: Every new command must define an integer Wyhash32 hash constant in `registry.c` for 1-cycle CPU dispatch.
 3. **No External Shared Libraries**: Keep Windows builds linking strictly against core system DLLs (`user32`, `gdi32`, `ole32`, `comdlg32`, `shlwapi`).
 4. **UTF-8 Everywhere Internal**: Convert to/from UTF-16 (`wchar_t`) strictly at Win32 API boundaries; keep all C engine logic pure UTF-8.
 5. **No Node.js / Python Dependency in Production**: Pre-compile all web bundles into `dist/` so end-users and C build tools only require `make` and `gcc`.
