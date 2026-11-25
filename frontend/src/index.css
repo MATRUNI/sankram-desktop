@@ -960,6 +960,8 @@ html, body {
 
 .docs-article {
   width: 100%;
+  content-visibility: auto;
+  contain-intrinsic-size: 800px;
 }
 
 .md-h1 {

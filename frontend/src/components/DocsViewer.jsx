@@ -107,11 +107,24 @@ function renderMarkdown(md) {
   return html.join("\n");
 }
 
+// In-memory module cache so switching tabs is instant (0 ms, no freeze)
+let cachedHtml = "";
+let cachedStats = "";
+let isFetching = false;
+
 export default function DocsViewer() {
-  const [htmlContent, setHtmlContent] = useState("");
-  const [loadStats, setLoadStats] = useState("STREAMING VIA VYOM.FS...");
+  const [htmlContent, setHtmlContent] = useState(cachedHtml);
+  const [loadStats, setLoadStats] = useState(cachedStats || "STREAMING VIA VYOM.FS...");
 
   useEffect(() => {
+    // If already cached, instant mount without re-reading or re-parsing!
+    if (cachedHtml) {
+      return;
+    }
+
+    if (isFetching) return;
+    isFetching = true;
+
     async function loadDocs() {
       try {
         let filePath = "docs/API.md";
@@ -134,9 +147,19 @@ export default function DocsViewer() {
         }
 
         const elapsed = (performance.now() - t0).toFixed(2);
-        setHtmlContent(renderMarkdown(md));
-        setLoadStats(`STREAMED ${md.length} BYTES FROM DISK IN ${elapsed} MS`);
+        
+        // Defer rendering slightly to let the UI finish paint/transition smoothly
+        requestAnimationFrame(() => {
+          const rendered = renderMarkdown(md);
+          const stats = `STREAMED ${md.length} BYTES FROM DISK IN ${elapsed} MS (CACHED)`;
+          cachedHtml = rendered;
+          cachedStats = stats;
+          setHtmlContent(rendered);
+          setLoadStats(stats);
+          isFetching = false;
+        });
       } catch (err) {
+        isFetching = false;
         setHtmlContent(
           `<div class="code-block" style="color: var(--danger-crimson);">
             Failed to stream docs/API.md: ${err.message || err}

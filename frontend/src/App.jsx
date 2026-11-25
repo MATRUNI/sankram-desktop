@@ -48,9 +48,15 @@ export default function App() {
       <CosmicBackground />
 
       <main className="app-main">
-        {activeTab === "telemetry" && <TelemetryHero />}
-        {activeTab === "fs" && <FsExplorer />}
-        {activeTab === "docs" && <DocsViewer />}
+        <div style={{ display: activeTab === "telemetry" ? "block" : "none" }}>
+          <TelemetryHero />
+        </div>
+        <div style={{ display: activeTab === "fs" ? "block" : "none" }}>
+          <FsExplorer />
+        </div>
+        <div style={{ display: activeTab === "docs" ? "block" : "none" }}>
+          <DocsViewer />
+        </div>
       </main>
 
       <footer className="telemetry-footer">
