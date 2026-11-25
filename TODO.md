@@ -10,7 +10,7 @@ This document tracks all completed milestones and outlines the comprehensive roa
 
 ```text
 [ Core IPC & O(1) Wyhash Switchboard  ]   100% [====================] (Complete)
-[ Draggable Frameless Window System  ]    85% [=================---] (Min, Max, Close, Drag)
+[ Window Geometry & Controls         ]   100% [====================] (Size, Pos, Center, Topmost, Resizable, Title, Min/Max)
 [ 64-Bit Chunked Filesystem Engine   ]   100% [====================] (Info, Chunk, Write, ReadDir, Touch, Rm, Rename, Move)
 [ Native Dialogs                     ]   100% [====================] (OpenFile, SaveFile, OpenDirectory, Message, Confirm)
 [ Native Clipboard Engine            ]   100% [====================] (writeText, readText, clear, hasText)
@@ -76,11 +76,15 @@ This document tracks all completed milestones and outlines the comprehensive roa
   - **macOS**: `NSAlert` with OK/Cancel.
 
 ### 2.3 Window Customization & Geometry (`window.vyom.window`)
-- [ ] **`window.setSize(width, height)` / `window.getSize()`**: Dynamic runtime resize.
-- [ ] **`window.setPosition(x, y)` / `window.getPosition()`**: Window positioning.
-- [ ] **`window.center()`**: Center window on active monitor.
+- [x] **`window.setSize(width, height)` / `window.getSize()`**: Dynamic runtime resize across Win32, GTK4 & Cocoa.
+- [x] **`window.setPosition(x, y)` / `window.getPosition()`**: Window positioning.
+- [x] **`window.center()`**: Center window on active monitor.
+- [x] **`window.setAlwaysOnTop(bool)`**: Pin window on top of all other windows (Win32 HWND_TOPMOST).
+- [x] **`window.setResizable(bool)`**: Toggle dynamic window resizing borders and controls.
+- [x] **`window.setMinSize(w, h)` / `window.setMaxSize(w, h)`**: Dynamic min/max bounds tracking.
+- [x] **`window.setTitle(title)`**: Dynamic runtime titlebar updates.
+- [x] **`window.isMaximized()` / `window.isMinimized()`**: Query live window state.
 - [ ] **`window.setFullscreen(bool)` / `window.isFullscreen()`**: Fullscreen / kiosk mode.
-- [ ] **`window.setAlwaysOnTop(bool)`**: Pin window on top of all other windows.
 - [ ] **`window.setFocus()` / `window.requestUserAttention()`**: Flash taskbar/dock icon on background event.
 - [ ] **`window.getMonitors()`**: Retrieve monitor bounds, resolution, refresh rate, and DPI scaling.
 

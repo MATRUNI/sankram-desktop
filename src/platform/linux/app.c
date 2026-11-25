@@ -281,6 +281,72 @@ void platform_window_start_drag(void)
     }
 }
 
+void platform_window_set_size(int width, int height) 
+{
+    if (!g_active_window) return;
+    gtk_window_set_default_size(GTK_WINDOW(g_active_window), width, height);
+}
+
+void platform_window_get_size(int *width, int *height) 
+{
+    if (!g_active_window) { *width = 0; *height = 0; return; }
+    *width = gtk_widget_get_width(GTK_WIDGET(g_active_window));
+    *height = gtk_widget_get_height(GTK_WIDGET(g_active_window));
+}
+
+void platform_window_set_position(int x, int y) 
+{
+    // Wayland security model enforces compositor-managed placement.
+    (void)x; (void)y;
+}
+
+void platform_window_get_position(int *x, int *y) 
+{
+    *x = 0; *y = 0;
+}
+
+void platform_window_center(void) 
+{
+    // Centering is managed by compositor on Wayland.
+}
+
+void platform_window_set_always_on_top(bool always_on_top) 
+{
+    // GTK4 delegates window layering to toplevel compositor.
+    (void)always_on_top;
+}
+
+void platform_window_set_resizable(bool resizable) 
+{
+    if (g_active_window) gtk_window_set_resizable(GTK_WINDOW(g_active_window), resizable);
+}
+
+void platform_window_set_min_size(int width, int height) 
+{
+    if (g_active_window) gtk_widget_set_size_request(GTK_WIDGET(g_active_window), width, height);
+}
+
+void platform_window_set_max_size(int width, int height) 
+{
+    (void)width; (void)height;
+}
+
+void platform_window_set_title(const char *title) 
+{
+    if (g_active_window && title) gtk_window_set_title(GTK_WINDOW(g_active_window), title);
+}
+
+bool platform_window_is_maximized(void) 
+{
+    if (!g_active_window) return false;
+    return gtk_window_is_maximized(GTK_WINDOW(g_active_window));
+}
+
+bool platform_window_is_minimized(void) 
+{
+    return false;
+}
+
 // -----------------------------------------------------------------------------
 // 4. NATIVE DIALOGS (GTK4 Modern FileDialog)
 // -----------------------------------------------------------------------------

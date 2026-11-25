@@ -1,6 +1,16 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 
 export default function Titlebar({ activeTab, setActiveTab }) {
+  const [appTitle, setAppTitle] = useState("REACT SPA");
+
+  useEffect(() => {
+    const handleTitleChange = (e) => {
+      if (e.detail) setAppTitle(e.detail);
+    };
+    window.addEventListener("vyom:titlechange", handleTitleChange);
+    return () => window.removeEventListener("vyom:titlechange", handleTitleChange);
+  }, []);
+
   const handleDrag = (e) => {
     // Only drag on left click and ignore button/tab clicks
     if (e.button === 0 && e.target.closest("button") === null) {
@@ -20,7 +30,9 @@ export default function Titlebar({ activeTab, setActiveTab }) {
           </svg>
           <span className="brand-name">VYOM</span>
           <span className="brand-divider">/</span>
-          <span className="brand-spec">REACT SPA</span>
+          <span className="brand-spec" style={{ maxWidth: "260px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {appTitle}
+          </span>
         </div>
 
         {/* Navigation Tabs */}

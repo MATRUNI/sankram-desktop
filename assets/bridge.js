@@ -18,6 +18,58 @@ window.vyom = {
     toggleMaximize: () => window.vyom.invoke("vyom:window:toggle_maximize"),
     close: () => window.vyom.invoke("vyom:window:close"),
     startDrag: () => window.vyom.invoke("vyom:window:start_drag"),
+    setSize: async (width, height) => {
+      const res = await window.vyom.invoke("vyom:window:set_size", { width: Number(width), height: Number(height) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    getSize: async () => {
+      const res = await window.vyom.invoke("vyom:window:get_size");
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setPosition: async (x, y) => {
+      const res = await window.vyom.invoke("vyom:window:set_position", { x: Number(x), y: Number(y) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    getPosition: async () => {
+      const res = await window.vyom.invoke("vyom:window:get_position");
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    center: async () => {
+      const res = await window.vyom.invoke("vyom:window:center");
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setAlwaysOnTop: async (alwaysOnTop = true) => {
+      const res = await window.vyom.invoke("vyom:window:set_always_on_top", { alwaysOnTop: Boolean(alwaysOnTop) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setResizable: async (resizable = true) => {
+      const res = await window.vyom.invoke("vyom:window:set_resizable", { resizable: Boolean(resizable) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setMinSize: async (width, height) => {
+      const res = await window.vyom.invoke("vyom:window:set_min_size", { width: Number(width), height: Number(height) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setMaxSize: async (width, height) => {
+      const res = await window.vyom.invoke("vyom:window:set_max_size", { width: Number(width), height: Number(height) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setTitle: async (title) => {
+      document.title = String(title);
+      window.dispatchEvent(new CustomEvent("vyom:titlechange", { detail: String(title) }));
+      const res = await window.vyom.invoke("vyom:window:set_title", { title: String(title) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    isMaximized: async () => {
+      const res = await window.vyom.invoke("vyom:window:is_maximized");
+      const parsed = typeof res === "string" ? JSON.parse(res) : res;
+      return Boolean(parsed?.maximized);
+    },
+    isMinimized: async () => {
+      const res = await window.vyom.invoke("vyom:window:is_minimized");
+      const parsed = typeof res === "string" ? JSON.parse(res) : res;
+      return Boolean(parsed?.minimized);
+    },
   },
   dialog:{
     openFile: async (options = {}) => {

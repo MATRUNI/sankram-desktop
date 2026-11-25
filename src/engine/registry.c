@@ -2,6 +2,7 @@
 #include "registry.h"
 #include "platform.h"
 #include "fs.h"
+#include "window.h"
 #include "clipboard.h"
 #include "json_util.h"
 #include <stdio.h>
@@ -30,6 +31,18 @@
 #define HASH_DIALOG_OPEN_DIRECTORY   0xce005053u // wyhash32("vyom:dialog:open_directory")
 #define HASH_DIALOG_MESSAGE          0x10585f47u // wyhash32("vyom:dialog:message")
 #define HASH_DIALOG_CONFIRM          0xc7c9ec2cu // wyhash32("vyom:dialog:confirm")
+#define HASH_WIN_SET_SIZE          0x94dc9436u // wyhash32("vyom:window:set_size")
+#define HASH_WIN_GET_SIZE          0x670a5d04u // wyhash32("vyom:window:get_size")
+#define HASH_WIN_SET_POSITION      0x1469b813u // wyhash32("vyom:window:set_position")
+#define HASH_WIN_GET_POSITION      0x1dbf97abu // wyhash32("vyom:window:get_position")
+#define HASH_WIN_CENTER            0x781a24b9u // wyhash32("vyom:window:center")
+#define HASH_WIN_SET_ALWAYS_ON_TOP 0x3db31c00u // wyhash32("vyom:window:set_always_on_top")
+#define HASH_WIN_SET_RESIZABLE     0x246c845au // wyhash32("vyom:window:set_resizable")
+#define HASH_WIN_SET_MIN_SIZE      0xefdddabfu // wyhash32("vyom:window:set_min_size")
+#define HASH_WIN_SET_MAX_SIZE      0xaf73f68eu // wyhash32("vyom:window:set_max_size")
+#define HASH_WIN_SET_TITLE         0xa926b002u // wyhash32("vyom:window:set_title")
+#define HASH_WIN_IS_MAXIMIZED      0x88bb433eu // wyhash32("vyom:window:is_maximized")
+#define HASH_WIN_IS_MINIMIZED      0xec78c398u // wyhash32("vyom:window:is_minimized")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -55,34 +68,6 @@ void app_bind_command(const char *name, app_command_fn handler)
             return;
         }
     }
-}
-
-static void handle_win_minimize(const char *args, ipc_reply_t *reply) 
-{
-    (void)args;
-    platform_window_minimize();
-    ipc_reply_send(reply, "{\"success\": true}");
-}
-
-static void handle_win_toggle_max(const char *args, ipc_reply_t *reply) 
-{
-    (void)args;
-    platform_window_toggle_maximize();
-    ipc_reply_send(reply, "{\"success\": true}");
-}
-
-static void handle_win_close(const char *args, ipc_reply_t *reply) 
-{
-    (void)args;
-    platform_window_close();
-    ipc_reply_send(reply, "{\"success\": true}");
-}
-
-static void handle_win_start_drag(const char *args, ipc_reply_t *reply) 
-{
-    (void)args;
-    platform_window_start_drag();
-    ipc_reply_send(reply, "{\"success\": true}");
 }
 
 static void reply_with_path(ipc_reply_t *reply, char *path) {
@@ -166,49 +151,40 @@ app_command_fn lookup_command(const char *name)
     // 1. Fast CPU register integer check (Takes 1 CPU cycle, ZERO strcmp!)
     switch (hash) 
     {
-        case HASH_WIN_MINIMIZE:
-            return (app_command_fn)handle_win_minimize;
-        case HASH_WIN_TOGGLE_MAX:
-            return (app_command_fn)handle_win_toggle_max;
-        case HASH_WIN_CLOSE:
-            return (app_command_fn)handle_win_close;
-        case HASH_DIALOG_OPEN_FILE:
-            return (app_command_fn)handle_dialog_open_file;
-        case HASH_WIN_START_DRAG:
-            return (app_command_fn)handle_win_start_drag;
-        case HASH_DIALOG_SAVE_FILE:
-            return (app_command_fn)handle_dialog_save_file;
-        case HASH_FS_FILE_INFO:
-            return (app_command_fn)handle_fs_file_info;
-        case HASH_FS_READ_CHUNK:
-            return (app_command_fn)handle_fs_read_chunk;
-        case HASH_FS_WRITE_TEXT:
-            return (app_command_fn)handle_fs_write_text;
-        case HASH_FS_READ_DIR:
-            return (app_command_fn)handle_fs_read_dir;
-        case HASH_FS_CREATE_FILE:
-            return (app_command_fn)handle_fs_create_file;
-        case HASH_FS_CREATE_DIR:
-            return (app_command_fn)handle_fs_create_dir;
-        case HASH_FS_REMOVE:
-            return (app_command_fn)handle_fs_remove;
+        case HASH_WIN_MINIMIZE:          return (app_command_fn)handle_window_minimize;
+        case HASH_WIN_TOGGLE_MAX:        return (app_command_fn)handle_window_toggle_maximize;
+        case HASH_WIN_CLOSE:             return (app_command_fn)handle_window_close;
+        case HASH_WIN_START_DRAG:        return (app_command_fn)handle_window_start_drag;
+        case HASH_WIN_SET_SIZE:          return (app_command_fn)handle_window_set_size;
+        case HASH_WIN_GET_SIZE:          return (app_command_fn)handle_window_get_size;
+        case HASH_WIN_SET_POSITION:      return (app_command_fn)handle_window_set_position;
+        case HASH_WIN_GET_POSITION:      return (app_command_fn)handle_window_get_position;
+        case HASH_WIN_CENTER:            return (app_command_fn)handle_window_center;
+        case HASH_WIN_SET_ALWAYS_ON_TOP: return (app_command_fn)handle_window_set_always_on_top;
+        case HASH_WIN_SET_RESIZABLE:     return (app_command_fn)handle_window_set_resizable;
+        case HASH_WIN_SET_MIN_SIZE:      return (app_command_fn)handle_window_set_min_size;
+        case HASH_WIN_SET_MAX_SIZE:      return (app_command_fn)handle_window_set_max_size;
+        case HASH_WIN_SET_TITLE:         return (app_command_fn)handle_window_set_title;
+        case HASH_WIN_IS_MAXIMIZED:      return (app_command_fn)handle_window_is_maximized;
+        case HASH_WIN_IS_MINIMIZED:      return (app_command_fn)handle_window_is_minimized;
+        case HASH_DIALOG_OPEN_FILE:      return (app_command_fn)handle_dialog_open_file;
+        case HASH_DIALOG_SAVE_FILE:      return (app_command_fn)handle_dialog_save_file;
+        case HASH_FS_FILE_INFO:          return (app_command_fn)handle_fs_file_info;
+        case HASH_FS_READ_CHUNK:         return (app_command_fn)handle_fs_read_chunk;
+        case HASH_FS_WRITE_TEXT:         return (app_command_fn)handle_fs_write_text;
+        case HASH_FS_READ_DIR:           return (app_command_fn)handle_fs_read_dir;
+        case HASH_FS_CREATE_FILE:        return (app_command_fn)handle_fs_create_file;
+        case HASH_FS_CREATE_DIR:         return (app_command_fn)handle_fs_create_dir;
+        case HASH_FS_REMOVE:             return (app_command_fn)handle_fs_remove;
         case HASH_FS_RENAME: // rename and move are same operations under the hood
-        case HASH_FS_MOVE:
-            return (app_command_fn)handle_fs_rename;
-        case HASH_CLIPBOARD_WRITE_TEXT:
-            return (app_command_fn)handle_clipboard_write;
-        case HASH_CLIPBOARD_READ_TEXT:
-            return (app_command_fn)handle_clipboard_read;
-        case HASH_CLIPBOARD_CLEAR:
-            return (app_command_fn)handle_clipboard_clear;
-        case HASH_CLIPBOARD_HAS_TEXT:
-            return (app_command_fn)handle_clipboard_has_text;
-        case HASH_DIALOG_OPEN_DIRECTORY:
-            return (app_command_fn)handle_dialog_open_directory;
-        case HASH_DIALOG_MESSAGE:
-            return (app_command_fn)handle_dialog_message;
-        case HASH_DIALOG_CONFIRM:
-            return (app_command_fn)handle_dialog_confirm;
+        case HASH_FS_MOVE:               return (app_command_fn)handle_fs_rename;
+        case HASH_CLIPBOARD_WRITE_TEXT:  return (app_command_fn)handle_clipboard_write;
+        case HASH_CLIPBOARD_READ_TEXT:   return (app_command_fn)handle_clipboard_read;
+        case HASH_CLIPBOARD_CLEAR:       return (app_command_fn)handle_clipboard_clear;
+        case HASH_CLIPBOARD_HAS_TEXT:    return (app_command_fn)handle_clipboard_has_text;
+        case HASH_DIALOG_OPEN_DIRECTORY: return (app_command_fn)handle_dialog_open_directory;
+        case HASH_DIALOG_MESSAGE:        return (app_command_fn)handle_dialog_message;
+        case HASH_DIALOG_CONFIRM:        return (app_command_fn)handle_dialog_confirm;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);

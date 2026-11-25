@@ -58,6 +58,10 @@ static HMODULE find_and_load_webview2_runtime(void)
 static ICoreWebView2Controller *g_controller = NULL;
 static ICoreWebView2 *g_webview    = NULL;
 static HWND g_hwnd = NULL;
+static int g_min_width = 0;
+static int g_min_height = 0;
+static int g_max_width = 0;
+static int g_max_height = 0;
 static const app_config_t *g_config = NULL;
 
 static HRESULT STDMETHODCALLTYPE dummy_QueryInterface(void *This, REFIID riid, void **ppv) {
@@ -270,13 +274,15 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
         case WM_GETMINMAXINFO: 
         {
             MINMAXINFO *mmi = (MINMAXINFO *)lParam;
-            if (g_config && g_config->window) 
-            {
-                if (g_config->window->min_width)  mmi->ptMinTrackSize.x = g_config->window->min_width;
-                if (g_config->window->min_height) mmi->ptMinTrackSize.y = g_config->window->min_height;
-                if (g_config->window->max_width)  mmi->ptMaxTrackSize.x = g_config->window->max_width;
-                if (g_config->window->max_height) mmi->ptMaxTrackSize.y = g_config->window->max_height;
-            }
+            int min_w = g_min_width  ? g_min_width  : (g_config && g_config->window ? g_config->window->min_width : 0);
+            int min_h = g_min_height ? g_min_height : (g_config && g_config->window ? g_config->window->min_height : 0);
+            int max_w = g_max_width  ? g_max_width  : (g_config && g_config->window ? g_config->window->max_width : 0);
+            int max_h = g_max_height ? g_max_height : (g_config && g_config->window ? g_config->window->max_height : 0);
+
+            if (min_w) mmi->ptMinTrackSize.x = min_w;
+            if (min_h) mmi->ptMinTrackSize.y = min_h;
+            if (max_w) mmi->ptMaxTrackSize.x = max_w;
+            if (max_h) mmi->ptMaxTrackSize.y = max_h;
             return 0;
         }
     }
@@ -413,6 +419,116 @@ void platform_window_start_drag(void)
     if (!g_hwnd) return;
     ReleaseCapture();
     SendMessageW(g_hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);
+}
+
+// -----------------------------------------------------------------------------
+// WINDOW GEOMETRY & STATE (Win32)
+// -----------------------------------------------------------------------------
+void platform_window_set_size(int width, int height) 
+{
+    if (!g_hwnd) return;
+    SetWindowPos(g_hwnd, NULL, 0, 0, width, height, SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void platform_window_get_size(int *width, int *height) 
+{
+    RECT rect;
+    if (g_hwnd && GetWindowRect(g_hwnd, &rect)) 
+    {
+        *width = rect.right - rect.left;
+        *height = rect.bottom - rect.top;
+    } 
+    else 
+    {
+        *width = 0;
+        *height = 0;
+    }
+}
+
+void platform_window_set_position(int x, int y) 
+{
+    if (!g_hwnd) return;
+    SetWindowPos(g_hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void platform_window_get_position(int *x, int *y) 
+{
+    RECT rect;
+    if (g_hwnd && GetWindowRect(g_hwnd, &rect)) 
+    {
+        *x = rect.left;
+        *y = rect.top;
+    } 
+    else 
+    {
+        *x = 0;
+        *y = 0;
+    }
+}
+
+void platform_window_center(void) 
+{
+    if (!g_hwnd) return;
+    RECT rc;
+    GetWindowRect(g_hwnd, &rc);
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top;
+    int screen_w = GetSystemMetrics(SM_CXSCREEN);
+    int screen_h = GetSystemMetrics(SM_CYSCREEN);
+    int x = (screen_w - w) / 2;
+    int y = (screen_h - h) / 2;
+    SetWindowPos(g_hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_NOACTIVATE);
+}
+
+void platform_window_set_always_on_top(bool always_on_top) 
+{
+    if (!g_hwnd) return;
+    SetWindowPos(g_hwnd, always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+}
+
+void platform_window_set_resizable(bool resizable) 
+{
+    if (!g_hwnd) return;
+    LONG style = GetWindowLongW(g_hwnd, GWL_STYLE);
+    if (resizable) 
+        style |= (WS_THICKFRAME | WS_MAXIMIZEBOX);
+    else 
+        style &= ~(WS_THICKFRAME | WS_MAXIMIZEBOX);
+
+    SetWindowLongW(g_hwnd, GWL_STYLE, style);
+    SetWindowPos(g_hwnd, NULL, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+}
+
+void platform_window_set_min_size(int width, int height) 
+{
+    g_min_width = width;
+    g_min_height = height;
+}
+
+void platform_window_set_max_size(int width, int height) 
+{
+    g_max_width = width;
+    g_max_height = height;
+}
+
+void platform_window_set_title(const char *title) 
+{
+    if (!g_hwnd || !title) return;
+    wchar_t title_w[256] = {0};
+    MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, 255);
+    SetWindowTextW(g_hwnd, title_w);
+}
+
+bool platform_window_is_maximized(void) 
+{
+    if (!g_hwnd) return false;
+    return IsZoomed(g_hwnd) != 0;
+}
+
+bool platform_window_is_minimized(void) 
+{
+    if (!g_hwnd) return false;
+    return IsIconic(g_hwnd) != 0;
 }
 
 static char* win32_file_dialog(const char *title, const char *default_name, BOOL is_save) {

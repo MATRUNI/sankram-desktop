@@ -181,6 +181,60 @@ export default function TelemetryHero() {
     }
   };
 
+  // Window Controls & Geometry
+  const handleResizeWindow = async () => {
+    try {
+      const cur = await window.vyom?.window?.getSize?.();
+      const newW = cur?.width === 850 ? 1150 : 850;
+      const newH = cur?.height === 620 ? 760 : 620;
+      await window.vyom?.window?.setSize?.(newW, newH);
+      const updated = await window.vyom?.window?.getSize?.();
+      setBenchLogs(`// [NATIVE WINDOW // DYNAMIC RESIZE]\n// Target: ${newW}x${newH}\n// Actual OS Geometry: ${updated?.width}x${updated?.height}`);
+      setBenchStatus("RESIZED");
+    } catch (err) {
+      setBenchLogs(`// Resize Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
+  const handleSetWindowTitle = async () => {
+    try {
+      const titles = [
+        "Vyom (व्योम) — High-Performance Native Runtime",
+        "Vyom — 1-Cycle Wyhash32 Dispatch",
+        "Vyom — < 30 KB Micro-Kernel",
+        "Vyom — Pure C11 Native Desktop Core"
+      ];
+      const next = titles[Math.floor(Math.random() * titles.length)];
+      await window.vyom?.window?.setTitle?.(next);
+      setBenchLogs(`// [NATIVE WINDOW // TITLE UPDATE]\n// New Title: "${next}"`);
+      setBenchStatus("TITLE_SET");
+    } catch (err) {
+      setBenchLogs(`// Set Title Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
+  const handleQueryWindowState = async () => {
+    try {
+      const size = await window.vyom?.window?.getSize?.();
+      const pos = await window.vyom?.window?.getPosition?.();
+      const isMax = await window.vyom?.window?.isMaximized?.();
+      const isMin = await window.vyom?.window?.isMinimized?.();
+      setBenchLogs(
+        `// [NATIVE WINDOW // GEOMETRY & STATE QUERY]\n` +
+        `// Size:        ${size?.width} x ${size?.height} px\n` +
+        `// Position:    x=${pos?.x}, y=${pos?.y}\n` +
+        `// Maximized:   ${isMax ? "YES" : "NO"}\n` +
+        `// Minimized:   ${isMin ? "YES" : "NO"}`
+      );
+      setBenchStatus("QUERIED");
+    } catch (err) {
+      setBenchLogs(`// Query Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
   // Pulse C Event (triggers C app_emit back to JS)
   const handlePulseCEvent = async () => {
     setBenchStatus("DISPATCHING");
@@ -348,6 +402,15 @@ export default function TelemetryHero() {
           </button>
           <button onClick={handleConfirmAction} className="strip-btn">
             <span>Native Confirm</span>
+          </button>
+          <button onClick={handleResizeWindow} className="strip-btn" title="Toggle dynamic window resize">
+            <span>Resize Win</span>
+          </button>
+          <button onClick={handleSetWindowTitle} className="strip-btn" title="Update native window title">
+            <span>Set Title</span>
+          </button>
+          <button onClick={handleQueryWindowState} className="strip-btn" title="Query native geometry and window state">
+            <span>Win State</span>
           </button>
           <button onClick={handleBenchmark} className="strip-btn">
             <span>10x IPC</span>

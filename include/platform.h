@@ -15,6 +15,19 @@ void platform_window_minimize(void);
 void platform_window_toggle_maximize(void);
 void platform_window_close(void);
 void platform_window_start_drag(void);
+// Window Geometry & State
+void platform_window_set_size(int width, int height);
+void platform_window_get_size(int *width, int *height);
+void platform_window_set_position(int x, int y);
+void platform_window_get_position(int *x, int *y);
+void platform_window_center(void);
+void platform_window_set_always_on_top(bool always_on_top);
+void platform_window_set_resizable(bool resizable);
+void platform_window_set_min_size(int width, int height);
+void platform_window_set_max_size(int width, int height);
+void platform_window_set_title(const char *title);
+bool platform_window_is_maximized(void);
+bool platform_window_is_minimized(void);
 
 // 4. Native Dialogs: returns dynamically allocated UTF-8 path string, or NULL if cancelled
 char* platform_dialog_open_file(const char *title, const char *filter);
