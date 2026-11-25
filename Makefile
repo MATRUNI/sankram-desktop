@@ -10,7 +10,7 @@ ifeq ($(OS), Windows_NT)
     PLATFORM := windows
     EXE := .exe
     PKG_CFLAGS :=
-    PKG_LIBS := -luser32 -lgdi32 -lole32 -lshlwapi -lcomdlg32
+    PKG_LIBS := -luser32 -lgdi32 -lole32 -lshlwapi -lcomdlg32 -lshell32
     MKDIR = mkdir -p $(1)
     RM = rm -rf $(1) 
     RUN_EMBED = ./$(BUILD_DIR)/embed$(EXE)

@@ -20,8 +20,27 @@ window.vyom = {
     startDrag: () => window.vyom.invoke("vyom:window:start_drag"),
   },
   dialog:{
-    openFile: (options = {}) => window.vyom.invoke("vyom:dialog:open_file", options),
-    saveFile: (options = {}) => window.vyom.invoke("vyom:dialog:save_file", options),
+    openFile: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:dialog:open_file", options);
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    saveFile: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:dialog:save_file", options);
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    openDirectory: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:dialog:open_directory", options);
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    message: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:dialog:message", options);
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    confirm: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:dialog:confirm", options);
+      const parsed = typeof res === "string" ? JSON.parse(res) : res;
+      return Boolean(parsed?.confirmed);
+    },
   },
 
   clipboard: {

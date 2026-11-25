@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <commdlg.h>
+#include <shlobj.h>
 #include "webview2_lite.h"
 #include "app.h"
 #include "bridge.h"
@@ -464,6 +465,65 @@ char* platform_dialog_open_file(const char *title, const char *filter) {
 char* platform_dialog_save_file(const char *title, const char *filter, const char *default_name) {
     (void)filter;
     return win32_file_dialog(title, default_name, TRUE);
+}
+
+char* platform_dialog_open_directory(const char *title) 
+{
+    wchar_t title_w[256] = L"Select Folder";
+    if (title && *title) MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, 256);
+
+    BROWSEINFOW bi = {0};
+    bi.hwndOwner = g_hwnd;
+    bi.lpszTitle = title_w;
+    bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | BIF_USENEWUI;
+
+    PIDLIST_ABSOLUTE pidl = SHBrowseForFolderW(&bi);
+    if (!pidl) return NULL;
+
+    wchar_t path_w[MAX_PATH];
+    char *result_path = NULL;
+    if (SHGetPathFromIDListW(pidl, path_w)) 
+    {
+        int len = WideCharToMultiByte(CP_UTF8, 0, path_w, -1, NULL, 0, NULL, NULL);
+        if (len > 0) 
+        {
+            result_path = (char *)malloc(len);
+            if (result_path) WideCharToMultiByte(CP_UTF8, 0, path_w, -1, result_path, len, NULL, NULL);
+        }
+    }
+
+    CoTaskMemFree(pidl);
+    return result_path; // Caller frees with free()
+}
+
+void platform_dialog_message(const char *title, const char *message, const char *type) 
+{
+    wchar_t title_w[256] = L"Alert";
+    wchar_t msg_w[1024] = L"";
+
+    if (title && *title) MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, 256);
+    if (message && *message) MultiByteToWideChar(CP_UTF8, 0, message, -1, msg_w, 1024);
+
+    UINT icon = MB_ICONINFORMATION;
+    if (type) 
+    {
+        if (strcmp(type, "error") == 0) icon = MB_ICONERROR;
+        else if (strcmp(type, "warning") == 0) icon = MB_ICONWARNING;
+    }
+
+    MessageBoxW(g_hwnd, msg_w, title_w, MB_OK | icon | MB_TASKMODAL);
+}
+
+bool platform_dialog_confirm(const char *title, const char *message) 
+{
+    wchar_t title_w[256] = L"Confirm";
+    wchar_t msg_w[1024] = L"";
+
+    if (title && *title) MultiByteToWideChar(CP_UTF8, 0, title, -1, title_w, 256);
+    if (message && *message) MultiByteToWideChar(CP_UTF8, 0, message, -1, msg_w, 1024);
+
+    int res = MessageBoxW(g_hwnd, msg_w, title_w, MB_OKCANCEL | MB_ICONQUESTION | MB_TASKMODAL);
+    return res == IDOK;
 }
 
 // -----------------------------------------------------------------------------

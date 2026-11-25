@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "fs.h"
 #include "clipboard.h"
+#include "json_util.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -26,6 +27,9 @@
 #define HASH_CLIPBOARD_READ_TEXT   0x989ead8eu // wyhash32("vyom:clipboard:read_text")
 #define HASH_CLIPBOARD_CLEAR       0x8eee9d42u // wyhash32("vyom:clipboard:clear")
 #define HASH_CLIPBOARD_HAS_TEXT    0xe86a74f5u // wyhash32("vyom:clipboard:has_text")
+#define HASH_DIALOG_OPEN_DIRECTORY   0xce005053u // wyhash32("vyom:dialog:open_directory")
+#define HASH_DIALOG_MESSAGE          0x10585f47u // wyhash32("vyom:dialog:message")
+#define HASH_DIALOG_CONFIRM          0xc7c9ec2cu // wyhash32("vyom:dialog:confirm")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -127,6 +131,35 @@ static void handle_dialog_save_file(const char *args, ipc_reply_t *reply)
     reply_with_path(reply, platform_dialog_save_file("Save File", NULL, default_name));
 }
 
+static void handle_dialog_open_directory(const char *args, ipc_reply_t *reply) 
+{
+    char title[128] = "Select Folder";
+    json_get_string(args, "title", title, sizeof(title));
+    reply_with_path(reply, platform_dialog_open_directory(title));
+}
+
+static void handle_dialog_message(const char *args, ipc_reply_t *reply) 
+{
+    char title[128] = "Alert";
+    char message[512] = "";
+    char type[32] = "info";
+    json_get_string(args, "title", title, sizeof(title));
+    json_get_string(args, "message", message, sizeof(message));
+    json_get_string(args, "type", type, sizeof(type));
+    platform_dialog_message(title, message, type);
+    ipc_reply_send(reply, "{\"success\": true}");
+}
+
+static void handle_dialog_confirm(const char *args, ipc_reply_t *reply) 
+{
+    char title[128] = "Confirm";
+    char message[512] = "";
+    json_get_string(args, "title", title, sizeof(title));
+    json_get_string(args, "message", message, sizeof(message));
+    bool confirmed = platform_dialog_confirm(title, message);
+    ipc_reply_send(reply, confirmed ? "{\"confirmed\": true}" : "{\"confirmed\": false}");
+}
+
 app_command_fn lookup_command(const char *name) 
 {
     uint32_t hash = wyhash32(name);
@@ -159,7 +192,7 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_fs_create_dir;
         case HASH_FS_REMOVE:
             return (app_command_fn)handle_fs_remove;
-        case HASH_FS_RENAME:
+        case HASH_FS_RENAME: // rename and move are same operations under the hood
         case HASH_FS_MOVE:
             return (app_command_fn)handle_fs_rename;
         case HASH_CLIPBOARD_WRITE_TEXT:
@@ -170,6 +203,12 @@ app_command_fn lookup_command(const char *name)
             return (app_command_fn)handle_clipboard_clear;
         case HASH_CLIPBOARD_HAS_TEXT:
             return (app_command_fn)handle_clipboard_has_text;
+        case HASH_DIALOG_OPEN_DIRECTORY:
+            return (app_command_fn)handle_dialog_open_directory;
+        case HASH_DIALOG_MESSAGE:
+            return (app_command_fn)handle_dialog_message;
+        case HASH_DIALOG_CONFIRM:
+            return (app_command_fn)handle_dialog_confirm;
         default:
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);

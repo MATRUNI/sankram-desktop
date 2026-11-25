@@ -133,6 +133,54 @@ export default function TelemetryHero() {
     }
   };
 
+  // Choose folder via native dialog
+  const handleChooseFolder = async () => {
+    try {
+      const res = await window.vyom?.dialog?.openDirectory?.({ title: "Select Workspace Directory" });
+      if (res && !res.canceled && res.path) {
+        setBenchLogs(`// [NATIVE DIALOG // DIRECTORY SELECTED]\n// Path:   ${res.path}\n// Status: User selected directory`);
+        setBenchStatus("FOLDER OK");
+      } else {
+        setBenchLogs("// [NATIVE DIALOG // DIRECTORY DISMISSED]\n// Path:   null\n// Status: Cancelled by user");
+        setBenchStatus("CANCELLED");
+      }
+    } catch (err) {
+      setBenchLogs(`// Directory Dialog Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
+  // Show native alert message popup
+  const handleShowAlert = async () => {
+    try {
+      await window.vyom?.dialog?.message?.({
+        title: "Vyom Core Alert",
+        message: "This is a 100% native operating system dialog spawned from C11!",
+        type: "info"
+      });
+      setBenchLogs("// [NATIVE DIALOG // MESSAGE ACKNOWLEDGED]\n// Alert closed by user.");
+      setBenchStatus("ALERT OK");
+    } catch (err) {
+      setBenchLogs(`// Alert Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
+  // Show native confirmation modal
+  const handleConfirmAction = async () => {
+    try {
+      const confirmed = await window.vyom?.dialog?.confirm?.({
+        title: "Confirm Critical Action",
+        message: "Do you confirm this action? Choose Cancel or OK."
+      });
+      setBenchLogs(`// [NATIVE DIALOG // CONFIRMATION RESULT]\n// User clicked: ${confirmed ? "OK (CONFIRMED)" : "CANCEL (ABORTED)"}`);
+      setBenchStatus(confirmed ? "CONFIRMED" : "REJECTED");
+    } catch (err) {
+      setBenchLogs(`// Confirm Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
   // Pulse C Event (triggers C app_emit back to JS)
   const handlePulseCEvent = async () => {
     setBenchStatus("DISPATCHING");
@@ -290,16 +338,25 @@ export default function TelemetryHero() {
         </div>
         <div className="strip-actions">
           <button onClick={handleChooseFile} className="strip-btn">
-            <span>Choose Native File</span>
+            <span>Open File</span>
+          </button>
+          <button onClick={handleChooseFolder} className="strip-btn">
+            <span>Pick Folder</span>
+          </button>
+          <button onClick={handleShowAlert} className="strip-btn">
+            <span>Native Alert</span>
+          </button>
+          <button onClick={handleConfirmAction} className="strip-btn">
+            <span>Native Confirm</span>
           </button>
           <button onClick={handleBenchmark} className="strip-btn">
-            <span>10x Latency Cycle</span>
+            <span>10x IPC</span>
           </button>
           <button onClick={() => handleBenchmarkStream(4 * 1024 * 1024)} className="strip-btn" title="Stream 10MB using optimal 4MB L3-cache chunks">
-            <span>Stream 10MB (4MB)</span>
+            <span>Stream 10MB</span>
           </button>
           <button onClick={handlePulseCEvent} className="strip-btn">
-            <span>Pulse C Event</span>
+            <span>Pulse C</span>
           </button>
         </div>
         <pre className="telemetry-console">{benchLogs}</pre>
