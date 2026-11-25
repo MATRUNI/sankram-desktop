@@ -116,8 +116,8 @@ window.vyom = {
       return typeof res === "string" ? JSON.parse(res) : res;
     },
 
-    // 2. Read chunk: splits header on line 1, hands you raw data!
-    readChunk: async (path, offset = 0, length = 65536) => {
+    // 2. Read chunk: splits header on line 1, hands you raw data! (4MB optimal L3 chunk size)
+    readChunk: async (path, offset = 0, length = 4 * 1024 * 1024) => {
       const raw = await window.vyom.invoke("vyom:fs:read_chunk", { path, offset, length });
       const idx = raw.indexOf("\n");
       if (idx === -1) {

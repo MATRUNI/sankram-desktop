@@ -42,6 +42,12 @@ const char *get_memi_type(const char *path)
             return "font/ttf";
         case HASH_WASM: 
             return "application/wasm";
+        case HASH_MP4:
+            return "video/mp4";
+        case HASH_WEBM:
+            return "video/webm";
+        case HASH_MP3:
+            return "audio/mpeg";
         default:
             goto return_default;
     }

@@ -593,6 +593,9 @@ html, body {
   min-height: 75px;
   max-height: 160px;
   overflow-y: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  cursor: text;
 }
 
 /* ==========================================================================

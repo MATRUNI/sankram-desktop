@@ -18,3 +18,11 @@ node_modules/
 *.swp
 *~
 lib
+
+# Media test assets
+*.mp4
+*.webm
+*.mp3
+*.wav
+*.ogg
+

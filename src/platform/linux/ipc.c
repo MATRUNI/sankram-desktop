@@ -17,17 +17,6 @@ void ipc_reply_error(ipc_reply_t *reply, const char *error_message)
     webkit_script_message_reply_return_error_message(reply->webkit_reply, error_message);
 }
 
-void pong(const char *args, ipc_reply_t *reply)
-{
-    (void)args;
-    ipc_reply_send(reply,"Pong!");
-}
-
-void greet(const char *args, ipc_reply_t *reply)
-{
-    (void)args;
-    ipc_reply_send(reply,"Hello there!");
-}
 
 static gboolean on_script_message(WebKitUserContentManager *manager, JSCValue *message,WebKitScriptMessageReply *reply, gpointer user_data)
 {
@@ -68,6 +57,4 @@ void ipc_init(WebKitUserContentManager *manager)
 {
     g_signal_connect(manager,"script-message-with-reply-received::desktop",G_CALLBACK(on_script_message),NULL);
     webkit_user_content_manager_register_script_message_handler_with_reply(manager, "desktop", NULL);
-    app_bind_command("greet",greet);
-    app_bind_command("pong",pong);
 }
