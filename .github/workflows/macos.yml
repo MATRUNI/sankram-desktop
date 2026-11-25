@@ -1,0 +1,48 @@
+name: macOS Build & Verify
+
+on:
+  push:
+    branches: [ "master", "feat/**" ]
+  pull_request:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build on Apple Silicon (macOS)
+    runs-on: macos-14 # Apple Silicon M1/M2 Runner
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Build Webview Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Compile Vyom Native macOS App
+        run: |
+          make clean
+          make
+
+      - name: Verify Mach-O Binary
+        run: |
+          ls -lh build/app
+          file build/app
+          otool -L build/app
+
+      - name: Upload macOS Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: vyom-macos-arm64
+          path: build/app
+

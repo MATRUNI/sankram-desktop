@@ -70,6 +70,11 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(BUILD_DIR)/bridge.h | $(BUILD_DIR)
 	@echo   [CC]    $<
 	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(BUILD_DIR) $(PKG_CFLAGS) -c $< -o $@
 
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.m $(BUILD_DIR)/bridge.h | $(BUILD_DIR)
+	@$(call MKDIR,$(dir $@))
+	@echo   [OBJC]  $<
+	@$(CC) $(CFLAGS) -I$(INCLUDE_DIR) -I$(BUILD_DIR) $(PKG_CFLAGS) -c $< -o $@
+
 $(BUILD_DIR):
 	@$(call MKDIR,$(BUILD_DIR))
 
