@@ -10,7 +10,8 @@ on:
 jobs:
   build-macos:
     name: Build on Apple Silicon (macOS)
-    runs-on: macos-14 # Apple Silicon M1/M2 Runner
+    runs-on: macos-latest # Apple Silicon (macOS 15 Sequoia)
+    if: hashFiles('src/platform/macos/**') != ''
 
     steps:
       - name: Checkout Code
@@ -45,4 +46,3 @@ jobs:
         with:
           name: vyom-macos-arm64
           path: build/app
-
