@@ -25,15 +25,23 @@ window.vyom = {
   },
 
   clipboard: {
-    writeText: (text) => window.vyom.invoke("vyom:clipboard:write_text", { text: String(text) }),
+    writeText: async (text) => {
+      const res = await window.vyom.invoke("vyom:clipboard:write_text", { text: String(text) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
     readText: async () => {
       const res = await window.vyom.invoke("vyom:clipboard:read_text");
-      return typeof res === "string" ? res : (res?.text ?? "");
+      const parsed = typeof res === "string" ? JSON.parse(res) : res;
+      return parsed?.text ?? "";
     },
-    clear: () => window.vyom.invoke("vyom:clipboard:clear"),
+    clear: async () => {
+      const res = await window.vyom.invoke("vyom:clipboard:clear");
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
     hasText: async () => {
       const res = await window.vyom.invoke("vyom:clipboard:has_text");
-      return typeof res === "boolean" ? res : Boolean(res?.hasText);
+      const parsed = typeof res === "string" ? JSON.parse(res) : res;
+      return Boolean(parsed?.hasText);
     },
   },
   

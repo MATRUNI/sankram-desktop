@@ -359,7 +359,7 @@ static void on_clip_read_finish(GObject *source, GAsyncResult *result, gpointer 
     char *text = gdk_clipboard_read_text_finish(GDK_CLIPBOARD(source), result, &error);
     if (text) 
     {
-        state->selected_path = strdup(text);
+        state->selected_path = g_strdup(text);
         g_free(text);
     }
     if (error) 
