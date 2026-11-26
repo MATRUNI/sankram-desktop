@@ -186,6 +186,7 @@ app_command_fn lookup_command(const char *name)
         case HASH_DIALOG_MESSAGE:        return (app_command_fn)handle_dialog_message;
         case HASH_DIALOG_CONFIRM:        return (app_command_fn)handle_dialog_confirm;
         default:
+        {
             // User commands (search 64-slot cmd_table)
             uint32_t idx = hash & (CMD_TABLE_SIZE - 1);
         
@@ -199,5 +200,6 @@ app_command_fn lookup_command(const char *name)
                     return cmd_table[slot].handler;
             }
             return NULL;
+        }
     }
 }
