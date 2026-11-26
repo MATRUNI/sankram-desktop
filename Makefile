@@ -87,8 +87,8 @@ run: $(TARGET)
 debug: CFLAGS := $(DEBUG_CFLAGS)
 debug: clean $(TARGET)
 
-# Release build: strips all debug symbols and optimizes for minimal size
-release: CFLAGS += -s -Os
+# Release build: strips all debug symbols, unused functions, and exception tables
+release: CFLAGS += -s -Os -ffunction-sections -Wl,--gc-sections -fno-asynchronous-unwind-tables
 release: clean $(TARGET)
 
 clean:
