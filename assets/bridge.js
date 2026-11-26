@@ -127,6 +127,39 @@ window.vyom = {
       return typeof res === "string" ? JSON.parse(res) : res;
     },
   },
+
+  notification: {
+    send: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:notification:send", {
+        title: options.title ? String(options.title) : "Vyom",
+        body: options.body ? String(options.body) : "",
+        icon: options.icon ? String(options.icon) : "",
+      });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+  },
+
+  tray: {
+    create: async (options = {}) => {
+      const res = await window.vyom.invoke("vyom:tray:create", {
+        tooltip: options.tooltip ? String(options.tooltip) : "Vyom",
+        icon: options.icon ? String(options.icon) : "",
+      });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setTooltip: async (tooltip) => {
+      const res = await window.vyom.invoke("vyom:tray:set_tooltip", { tooltip: String(tooltip) });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    setMenu: async (items = []) => {
+      const res = await window.vyom.invoke("vyom:tray:set_menu", { items });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+    destroy: async () => {
+      const res = await window.vyom.invoke("vyom:tray:destroy");
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+  },
   
   // JavaScript -> C (Commands)
   invoke: function (cmd, args = {}) 

@@ -5,6 +5,24 @@ export default function TelemetryHero() {
   const [latency, setLatency] = useState("0.00 ms");
   const [benchLogs, setBenchLogs] = useState("// Telemetry ready. Click pulse or run latency cycle.");
   const [benchStatus, setBenchStatus] = useState("STANDBY");
+  const [trayActive, setTrayActive] = useState(false);
+
+  useEffect(() => {
+    if (!window.vyom?.on) return;
+    const unlistenMenu = window.vyom.on("tray:menu_click", (data) => {
+      const item = typeof data === "string" ? JSON.parse(data) : data;
+      setBenchLogs((prev) => `${prev}\n// [TRAY MENU CLICK]: id="${item?.id}"`);
+      if (item?.id === "notify") {
+        window.vyom?.notification?.send?.({
+          title: "Vyom Tray",
+          body: "Triggered directly from native tray menu!"
+        });
+      } else if (item?.id === "quit") {
+        window.vyom?.window?.close?.();
+      }
+    });
+    return () => unlistenMenu?.();
+  }, []);
 
   // Listen for asynchronous push events from C core
   useEffect(() => {
@@ -235,6 +253,44 @@ export default function TelemetryHero() {
     }
   };
 
+  const handleSendNotification = async () => {
+    try {
+      const res = await window.vyom?.notification?.send?.({
+        title: "Vyom C11",
+        body: "Native OS notification triggered from React UI!"
+      });
+      setBenchLogs(`// [NATIVE NOTIFICATION // DISPATCHED]\n// Response: ${JSON.stringify(res)}`);
+      setBenchStatus("NOTIFIED");
+    } catch (err) {
+      setBenchLogs(`// Notification Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
+  const handleToggleTray = async () => {
+    try {
+      if (!trayActive) {
+        await window.vyom?.tray?.create?.({ tooltip: "Vyom Runtime (< 75 KB)" });
+        await window.vyom?.tray?.setMenu?.([
+          { id: "notify", label: "Send Notification" },
+          { separator: true },
+          { id: "quit", label: "Quit Vyom" }
+        ]);
+        setTrayActive(true);
+        setBenchLogs(`// [NATIVE TRAY // CREATED]\n// Tray icon & menu registered with OS.`);
+        setBenchStatus("TRAY_ON");
+      } else {
+        await window.vyom?.tray?.destroy?.();
+        setTrayActive(false);
+        setBenchLogs(`// [NATIVE TRAY // DESTROYED]\n// Tray icon removed from OS panel.`);
+        setBenchStatus("TRAY_OFF");
+      }
+    } catch (err) {
+      setBenchLogs(`// Tray Error: ${err.message || err}`);
+      setBenchStatus("FAULT");
+    }
+  };
+
   // Pulse C Event (triggers C app_emit back to JS)
   const handlePulseCEvent = async () => {
     setBenchStatus("DISPATCHING");
@@ -411,6 +467,12 @@ export default function TelemetryHero() {
           </button>
           <button onClick={handleQueryWindowState} className="strip-btn" title="Query native geometry and window state">
             <span>Win State</span>
+          </button>
+          <button onClick={handleSendNotification} className="strip-btn" title="Send native OS notification">
+            <span>Notify</span>
+          </button>
+          <button onClick={handleToggleTray} className="strip-btn" title="Toggle native OS system tray icon & menu">
+            <span>{trayActive ? "Destroy Tray" : "Spawn Tray"}</span>
           </button>
           <button onClick={handleBenchmark} className="strip-btn">
             <span>10x IPC</span>

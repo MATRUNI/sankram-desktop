@@ -10,6 +10,7 @@ void ipc_reply_send(ipc_reply_t *reply, const char *json_response)
 {
     JSCValue *res = jsc_value_new_string(reply->ctx, json_response);
     webkit_script_message_reply_return_value(reply->webkit_reply, res);
+    g_object_unref(res);
 }
 
 void ipc_reply_error(ipc_reply_t *reply, const char *error_message) 

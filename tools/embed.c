@@ -35,7 +35,8 @@ int main(int argc, char *argv[])
         fclose(out);
         return 1;
     }
-    fread(src, 1, size, in);
+    size_t res = fread(src, 1, size, in);
+    (void)res;
     src[size] = '\0';
     fclose(in);
 

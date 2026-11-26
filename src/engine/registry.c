@@ -2,6 +2,7 @@
 #include "registry.h"
 #include "platform.h"
 #include "fs.h"
+#include "tray.h"
 #include "window.h"
 #include "native_path.h"
 #include "clipboard.h"
@@ -47,6 +48,11 @@
 #define HASH_PATH_GET_SPECIAL      0x084180b6u // wyhash32("vyom:path:get_special")
 #define HASH_PATH_GET_ALL          0x475cb045u // wyhash32("vyom:path:get_all")
 #define HASH_FS_GET_DRIVES         0xd154a90cu // wyhash32("vyom:fs:get_drives")
+#define HASH_NOTIFICATION_SEND       0x7d521837u // wyhash32("vyom:notification:send")
+#define HASH_TRAY_CREATE             0x3c05eaf3u // wyhash32("vyom:tray:create")
+#define HASH_TRAY_SET_TOOLTIP        0x9dff0604u // wyhash32("vyom:tray:set_tooltip")
+#define HASH_TRAY_SET_MENU           0x1f827d68u // wyhash32("vyom:tray:set_menu")
+#define HASH_TRAY_DESTROY            0xceaf0e8cu // wyhash32("vyom:tray:destroy")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -192,6 +198,11 @@ app_command_fn lookup_command(const char *name)
         case HASH_PATH_GET_SPECIAL:      return (app_command_fn)handle_path_get_special;
         case HASH_PATH_GET_ALL:          return (app_command_fn)handle_path_get_all;              
         case HASH_FS_GET_DRIVES:         return (app_command_fn)handle_fs_get_drives;
+        case HASH_NOTIFICATION_SEND:     return (app_command_fn)handle_notification_send;
+        case HASH_TRAY_CREATE:           return (app_command_fn)handle_tray_create;
+        case HASH_TRAY_SET_TOOLTIP:      return (app_command_fn)handle_tray_set_tooltip;
+        case HASH_TRAY_SET_MENU:         return (app_command_fn)handle_tray_set_menu;
+        case HASH_TRAY_DESTROY:          return (app_command_fn)handle_tray_destroy;
         default:
         {
             // User commands (search 64-slot cmd_table)

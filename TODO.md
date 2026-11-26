@@ -15,9 +15,9 @@ This document tracks all completed milestones and outlines the comprehensive roa
 [ Native Dialogs                     ]   100% [====================] (OpenFile, SaveFile, OpenDirectory, Message, Confirm)
 [ Native Clipboard Engine            ]   100% [====================] (writeText, readText, clear, hasText)
 [ macOS (Cocoa + WKWebView)          ]   100% [====================] (Complete & CI Verified)
-[ Native Notifications (Tray/Banners)]     0% [--------------------] (Planned)
+[ Native Notifications (Tray/Banners)]   100% [====================] (Complete & CI Verified)
 [ Process & Shell Execution          ]     0% [--------------------] (Planned)
-[ System Tray & Context Menus        ]     0% [--------------------] (Planned)
+[ System Tray & Context Menus        ]   100% [====================] (Complete & CI Verified)
 ```
 
 ---
@@ -100,7 +100,7 @@ This document tracks all completed milestones and outlines the comprehensive roa
 - [ ] **`process.kill(pid, signal)`**: Process termination.
 
 ### 3.2 Standard Paths & Environment (`window.vyom.path` / `os`)
-- [ ] **`path.getSpecial(name)`**: Resolve OS-standard directories across Windows and Linux:
+- [x] **`path.getSpecial(name)`**: Resolve OS-standard directories across Windows, Linux, and macOS:
   - `home` (`%USERPROFILE%` / `$HOME`)
   - `appData` (`%APPDATA%` / `~/.config`)
   - `desktop`
@@ -120,16 +120,18 @@ This document tracks all completed milestones and outlines the comprehensive roa
 ## Phase 4: Native Shell Presence (System Tray & Menus 🔔)
 
 ### 4.1 System Tray & Notifications Area (`window.vyom.tray`)
-- [ ] **`tray.create({ icon, tooltip })`**: Spawn system tray icon.
+- [x] **`tray.create({ icon, tooltip })`**: Spawn system tray icon.
   - **Win32**: `Shell_NotifyIconW` with `NIM_ADD`.
-  - **Linux**: `GtkStatusIcon` / `StatusNotifierItem` (AppIndicator/libayatana).
-- [ ] **`tray.setMenu(menuItems)`**: Right-click tray context menu (*Open*, *Hide*, *Separator*, *Quit*).
-- [ ] **`tray.destroy()`**: Clean removal on shutdown.
+  - **Linux**: `StatusNotifierItem` over `GDBusConnection`.
+  - **macOS**: `NSStatusBar` + `NSStatusItem`.
+- [x] **`tray.setMenu(menuItems)`**: Right-click tray context menu (*Open*, *Hide*, *Separator*, *Quit*).
+- [x] **`tray.destroy()`**: Clean removal on shutdown.
 
 ### 4.2 Native Desktop Notifications (`window.vyom.notification`)
-- [ ] **`notification.send({ title, body, icon })`**: Native banner / toast alert.
-  - **Win32**: Balloon tooltip or Windows Action Center toast.
-  - **Linux**: `GNotification` or `libnotify`.
+- [x] **`notification.send({ title, body, icon })`**: Native banner / toast alert.
+  - **Win32**: `Shell_NotifyIconW` with `NIF_INFO`.
+  - **Linux**: `org.freedesktop.Notifications.Notify` over `GDBus`.
+  - **macOS**: `osascript` native notification.
 
 ### 4.3 Native Window Menu Bar (`window.vyom.menu`)
 - [ ] **`menu.setWindowMenu(menuTree)`**: Top application menu bar (*File*, *Edit*, *View*, *Window*, *Help*).

@@ -49,10 +49,22 @@ void  platform_clipboard_clear(void);
 
 bool  platform_clipboard_has_text(void);
 
-// 6. System Special Paths
+// 6. System Special Paths & System Storage Drives
 char* platform_path_get_special(const char *name);
 
-// 7. System Storage Drives
 char* platform_fs_get_drives(void);
+
+// 7. Native Notifications & System Tray
+typedef struct {
+    char id[64];
+    char label[128];
+    bool separator;
+} tray_menu_item_t;
+
+void platform_notification_send(const char *title, const char *body, const char *icon);
+void platform_tray_create(const char *tooltip, const char *icon);
+void platform_tray_set_tooltip(const char *tooltip);
+void platform_tray_set_menu(const tray_menu_item_t *items, int count);
+void platform_tray_destroy(void);
 
 #endif
