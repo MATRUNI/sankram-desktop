@@ -1,0 +1,158 @@
+name: Cross-Platform CI
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    name: Build & Verify (Windows x64)
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup MSYS2 MinGW-w64
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: false
+          install: >-
+            mingw-w64-x86_64-gcc
+            make
+
+      - name: Setup Node.js for Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Build Webview Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Compile Vyom Native Windows App
+        shell: msys2 {0}
+        run: |
+          make clean
+          make release
+
+      - name: Verify PE Executable
+        shell: msys2 {0}
+        run: |
+          if [ -f "build/app.exe" ]; then
+            ls -lh build/app.exe
+            file build/app.exe
+          else
+            echo "Error: build/app.exe not found!"
+            exit 1
+          fi
+
+      - name: Upload Windows Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: vyom-windows-x64
+          path: build/app.exe
+          if-no-files-found: error
+
+  build-linux:
+    name: Build & Verify (Linux x64)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install GTK4 & WebKitGTK 6.0 Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-4-dev libwebkitgtk-6.0-dev
+
+      - name: Setup Node.js for Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Build Webview Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Compile Vyom Native Linux App
+        run: |
+          if [ -d "src/platform/linux" ]; then
+            make clean
+            make release
+          else
+            echo "No Linux platform code found. Skipping."
+          fi
+
+      - name: Verify ELF Executable
+        run: |
+          if [ -f "build/app" ]; then
+            ls -lh build/app
+            file build/app
+            ldd build/app
+          fi
+
+      - name: Upload Linux Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: vyom-linux-x64
+          path: build/app
+          if-no-files-found: ignore
+
+  build-macos:
+    name: Build & Verify (macOS ARM64)
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js for Frontend
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: 'frontend/package-lock.json'
+
+      - name: Build Webview Frontend
+        run: |
+          cd frontend
+          npm ci
+          npm run build
+
+      - name: Compile Vyom Native macOS App
+        run: |
+          if [ -d "src/platform/macos" ]; then
+            make clean
+            make
+          else
+            echo "No macOS platform code on this branch. Skipping build."
+          fi
+
+      - name: Verify Mach-O Binary
+        run: |
+          if [ -f "build/app" ]; then
+            ls -lh build/app
+            file build/app
+            otool -L build/app
+          fi
+
+      - name: Upload macOS Binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: vyom-macos-arm64
+          path: build/app
+          if-no-files-found: ignore

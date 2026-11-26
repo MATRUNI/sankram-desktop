@@ -115,6 +115,18 @@ window.vyom = {
       return Boolean(parsed?.hasText);
     },
   },
+
+  path: {
+    getSpecial: async (name) => {
+      const res = await window.vyom.invoke("vyom:path:get_special", { name: String(name) });
+      const parsed = typeof res === "string" ? JSON.parse(res) : res;
+      return parsed?.path ?? "";
+    },
+    getAll: async () => {
+      const res = await window.vyom.invoke("vyom:path:get_all");
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+  },
   
   // JavaScript -> C (Commands)
   invoke: function (cmd, args = {}) 
@@ -255,6 +267,12 @@ window.vyom = {
     // 9. Move alias (identical to rename)
     move: async (from, to) => {
       const res = await window.vyom.invoke("vyom:fs:move", { from, to });
+      return typeof res === "string" ? JSON.parse(res) : res;
+    },
+
+    // 10. Get all mounted storage drives / disks
+    getDrives: async () => {
+      const res = await window.vyom.invoke("vyom:fs:get_drives");
       return typeof res === "string" ? JSON.parse(res) : res;
     },
   },

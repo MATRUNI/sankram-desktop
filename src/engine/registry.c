@@ -3,6 +3,7 @@
 #include "platform.h"
 #include "fs.h"
 #include "window.h"
+#include "native_path.h"
 #include "clipboard.h"
 #include "json_util.h"
 #include <stdio.h>
@@ -43,6 +44,9 @@
 #define HASH_WIN_SET_TITLE         0xa926b002u // wyhash32("vyom:window:set_title")
 #define HASH_WIN_IS_MAXIMIZED      0x88bb433eu // wyhash32("vyom:window:is_maximized")
 #define HASH_WIN_IS_MINIMIZED      0xec78c398u // wyhash32("vyom:window:is_minimized")
+#define HASH_PATH_GET_SPECIAL      0x084180b6u // wyhash32("vyom:path:get_special")
+#define HASH_PATH_GET_ALL          0x475cb045u // wyhash32("vyom:path:get_all")
+#define HASH_FS_GET_DRIVES         0xd154a90cu // wyhash32("vyom:fs:get_drives")
 typedef struct {
     char name[32];
     uint32_t hash;
@@ -185,6 +189,9 @@ app_command_fn lookup_command(const char *name)
         case HASH_DIALOG_OPEN_DIRECTORY: return (app_command_fn)handle_dialog_open_directory;
         case HASH_DIALOG_MESSAGE:        return (app_command_fn)handle_dialog_message;
         case HASH_DIALOG_CONFIRM:        return (app_command_fn)handle_dialog_confirm;
+        case HASH_PATH_GET_SPECIAL:      return (app_command_fn)handle_path_get_special;
+        case HASH_PATH_GET_ALL:          return (app_command_fn)handle_path_get_all;              
+        case HASH_FS_GET_DRIVES:         return (app_command_fn)handle_fs_get_drives;
         default:
         {
             // User commands (search 64-slot cmd_table)

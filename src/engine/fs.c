@@ -333,3 +333,15 @@ void handle_fs_rename(const char *args, ipc_reply_t *reply)
         ipc_reply_error(reply, "Failed to rename or move path");
 #endif
 }
+
+// 9. Get Mounted Storage Drives / Disks
+void handle_fs_get_drives(const char *args, ipc_reply_t *reply) 
+{
+    (void)args;
+    char *json = platform_fs_get_drives();
+    if (json) 
+    {
+        ipc_reply_send(reply, json);
+    } 
+    else ipc_reply_send(reply, "[]");
+}

@@ -49,4 +49,10 @@ void  platform_clipboard_clear(void);
 
 bool  platform_clipboard_has_text(void);
 
+// 6. System Special Paths
+char* platform_path_get_special(const char *name);
+
+// 7. System Storage Drives
+char* platform_fs_get_drives(void);
+
 #endif
