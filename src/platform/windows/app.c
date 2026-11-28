@@ -1,6 +1,7 @@
 #include "internal.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <shobjidl.h>
 #include "webview2_lite.h"
 #include "bridge.h"
 
@@ -222,7 +223,8 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 {
     if (win32_tray_handle_message(hwnd, uMsg, wParam, lParam))
         return 0;
-
+    if (win32_process_handle_message(uMsg, wParam, lParam))
+        return 0;
     switch (uMsg)
     {
         case WM_DESTROY:
@@ -262,6 +264,7 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
     HINSTANCE hInstance = GetModuleHandle(NULL);
     (void)argc;
     (void)argv;
+    SetCurrentProcessExplicitAppUserModelID(L"Vyom.Desktop.App");
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     WNDCLASSEXW wc = {0};
     g_config = config;
@@ -274,6 +277,8 @@ int platform_app_run(const app_config_t *config, int argc, char *argv[])
 
     wc.lpszClassName = L"VyomWindow";
     wc.lpfnWndProc = WndProc;
+    wc.hIcon   = LoadIconW(hInstance, MAKEINTRESOURCEW(1));
+    wc.hIconSm = LoadIconW(hInstance, MAKEINTRESOURCEW(1));
     RegisterClassExW(&wc);
 
     DWORD style = WS_OVERLAPPEDWINDOW;

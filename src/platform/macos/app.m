@@ -83,6 +83,8 @@ WKWebView *g_active_webview = nil;
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
     (void)notification;
     [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+    NSImage *appIcon = [[NSImage alloc] initWithContentsOfFile:@"assets/icon.png"];
+    if (appIcon) [NSApp setApplicationIconImage:appIcon];
 
     NSMenu *menubar = [[NSMenu alloc] init];
     NSMenuItem *appMenuItem = [[NSMenuItem alloc] init];

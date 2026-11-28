@@ -5,6 +5,7 @@
 #include "bridge.h"
 #include "memi.h"
 #include "ipc.h"
+#include "process.h"
 
 GtkWidget *g_active_webview = NULL;
 GtkWidget *g_active_window = NULL;
@@ -96,6 +97,13 @@ static void on_uri_scheme_request(WebKitURISchemeRequest *request, gpointer user
     g_object_unref(file);
 }
 
+static void on_load_changed(WebKitWebView *webview, WebKitLoadEvent load_event, gpointer user_data)
+{
+    (void)webview; (void)user_data;
+    if (load_event == WEBKIT_LOAD_STARTED)
+        process_cleanup_all();
+}
+
 static void activate_callback(GtkApplication *app, gpointer user_data)
 {
     app_config_t *con = (app_config_t *)user_data;
@@ -114,6 +122,7 @@ static void activate_callback(GtkApplication *app, gpointer user_data)
 
     GtkWidget *webview = webkit_web_view_new();
     g_active_webview = webview;
+    g_signal_connect(webview, "load-changed", G_CALLBACK(on_load_changed), NULL);
     gtk_widget_set_hexpand(webview, TRUE);
     gtk_widget_set_vexpand(webview, TRUE);
 
@@ -187,7 +196,7 @@ static void activate_callback(GtkApplication *app, gpointer user_data)
 
 int platform_app_run(const app_config_t *config, int argc, char *argv[])
 {
-    GtkApplication *app = gtk_application_new(NULL, G_APPLICATION_DEFAULT_FLAGS);
+    GtkApplication *app = gtk_application_new("com.vyom.app", G_APPLICATION_DEFAULT_FLAGS);
     g_signal_connect(app, "activate", G_CALLBACK(activate_callback), (gpointer)config);
 
     g_application_run(G_APPLICATION(app), argc, argv);

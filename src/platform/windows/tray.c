@@ -19,7 +19,8 @@ static void ensure_tray_icon(const char *tooltip)
         g_nid.uID = 1;
         g_nid.uFlags = NIF_ICON | NIF_MESSAGE | NIF_TIP;
         g_nid.uCallbackMessage = WM_TRAYICON;
-        g_nid.hIcon = LoadIconW(NULL, (LPCWSTR)IDI_APPLICATION);
+        HICON app_icon = LoadIconW(GetModuleHandleW(NULL), MAKEINTRESOURCEW(1));
+        g_nid.hIcon = app_icon ? app_icon : LoadIconW(NULL, (LPCWSTR)IDI_APPLICATION);
         wcsncpy(g_nid.szTip, L"Vyom", 127);
         if (tooltip && *tooltip)
             MultiByteToWideChar(CP_UTF8, 0, tooltip, -1, g_nid.szTip, 127);
@@ -37,7 +38,9 @@ void platform_notification_send(const char *title, const char *body, const char 
 
     NOTIFYICONDATAW nid = g_nid;
     nid.uFlags = NIF_INFO;
-    nid.dwInfoFlags = NIIF_INFO;
+    // nid.dwInfoFlags = NIIF_INFO;
+    nid.dwInfoFlags = NIIF_USER | NIIF_LARGE_ICON;
+nid.hBalloonIcon = g_nid.hIcon;
     wcsncpy(nid.szInfoTitle, L"Vyom", 63);
     nid.szInfo[0] = L'\0';
     if (title && *title) MultiByteToWideChar(CP_UTF8, 0, title, -1, nid.szInfoTitle, 63);
